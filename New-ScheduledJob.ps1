@@ -34,7 +34,7 @@ $RegisterScheduledJobParameters = @{
 
     Name = 'Backup Root Certificates'
     FilePath = $PSScriptPath
-    Credential = 'test\test'
+    Credential = 'support'
     Authentication = 'Default'
     
 
