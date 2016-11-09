@@ -28,19 +28,56 @@ $NewScheduledJobOptionParameters = @{
 
 $Options = New-ScheduledJobOption @NewScheduledJobOptionParameters
 
+$SecurePasswordParameters = [psobject] @{
+
+        String = 'mvsupport'
+        AsPlainText = $true
+        Force = $true
+
+    }
+
+
+    $SecurePassword = ConvertTo-SecureString @SecurePasswordParameters
+
+
+    $AdminCredentialParameters = [psobject] @{
+
+        TypeName = 'System.Management.Automation.PSCredential'
+        ArgumentList = ( 'support' , $SecurePassword )
+        
+    }
+
+
+    $AdminCredential =  New-Object @AdminCredentialParameters
+
 
 
 $RegisterScheduledJobParameters = @{
 
     Name = 'Backup Root Certificates'
     FilePath = $PSScriptPath
-    Credential = 'support'
+    Credential = $AdminCredential
     Authentication = 'Default'
+    Confirm = $false
+    Erroraction = 'Stop'
     
 
 
 }
 
 
+try {
 
-Register-ScheduledJob @RegisterScheduledJobParameters
+    Register-ScheduledJob @RegisterScheduledJobParameters
+
+    }
+
+catch { 
+
+    Unregister-ScheduledJob $RegisterScheduledJobParameters.Name
+    #Start-Sleep -Seconds 2
+    Register-ScheduledJob @RegisterScheduledJobParameters
+
+
+
+    }
