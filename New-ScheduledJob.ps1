@@ -28,29 +28,7 @@ $NewScheduledJobOptionParameters = @{
 
 $Options = New-ScheduledJobOption @NewScheduledJobOptionParameters
 
-$SecurePasswordParameters = [psobject] @{
-
-        String = 'mvsupport'
-        AsPlainText = $true
-        Force = $true
-
-    }
-
-
-    $SecurePassword = ConvertTo-SecureString @SecurePasswordParameters
-
-
-    $AdminCredentialParameters = [psobject] @{
-
-        TypeName = 'System.Management.Automation.PSCredential'
-        ArgumentList = ( 'support' , $SecurePassword )
-        
-    }
-
-
-    $AdminCredential =  New-Object @AdminCredentialParameters
-
-
+$AdminCredential = Get-Credntial
 
 $RegisterScheduledJobParameters = @{
 
