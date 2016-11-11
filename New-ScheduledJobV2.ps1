@@ -1,8 +1,16 @@
 #$PSScriptPath = 'C:\Scripts\New-CertificateBackup.ps1'
 
-#Get-Credential -Credential 
+#region Credentials 
 
-#region Credentials
+#region NoPassword
+#Let user enter password
+
+Get-Credential -CredentialTest\Test"
+
+#endregion NoPassword
+
+#region SavePassword
+#Let user save password in the script
 
 $UserName = 'support'
 $Password = 'mvsupport'
@@ -29,8 +37,9 @@ $AdminCredentialParameters = [psobject] @{
 
 $AdminCredential = New-Object @AdminCredentialParameters
 
+#endregion SavePassword
 
-#endregion
+#endregion Credentials
 
 #region Certificate Backup
 
@@ -196,3 +205,4 @@ catch {
 
 }
 
+#endregion Certificate Backup
