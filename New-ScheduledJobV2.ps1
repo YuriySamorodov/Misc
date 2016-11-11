@@ -5,7 +5,7 @@
 #region NoPassword
 #Let user enter password
 
-Get-Credential -CredentialTest\Test"
+Get-Credential -Credential "Test\Test"
 
 #endregion NoPassword
 
