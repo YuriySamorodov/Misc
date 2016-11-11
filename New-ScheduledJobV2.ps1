@@ -5,189 +5,189 @@
 #region NoPassword
 #Let user enter password
 
-Get-Credential -Credential "Test\Test"
+    Get-Credential -Credential "IONHARRIS\TasksServiceAccount"
 
 #endregion NoPassword
 
 #region SavePassword
 #Let user save password in the script
 
-$UserName = 'support'
-$Password = 'mvsupport'
+    $UserName = 'support'
+    $Password = 'mvsupport'
 
-$SecurePasswordParameters = [psobject] @{
+    $SecurePasswordParameters = [psobject] @{
 
-        String = $Password
-        AsPlainText = $true
-        Force = $true
+            String = $Password
+            AsPlainText = $true
+            Force = $true
 
-}
+    }
 
-$SecurePassword = ConvertTo-SecureString @SecurePasswordParameters
+    $SecurePassword = ConvertTo-SecureString @SecurePasswordParameters
 
-$AdminCredentialParameters = [psobject] @{
+    $AdminCredentialParameters = [psobject] @{
 
-        TypeName = 'System.Management.Automation.PSCredential'
-        ArgumentList = ( $UserName , $SecurePassword )
+            TypeName = 'System.Management.Automation.PSCredential'
+            ArgumentList = ( $UserName , $SecurePassword )
         
-}
+    }
 
 
-$AdminCredential = New-Object @AdminCredentialParameters
+    $AdminCredential = New-Object @AdminCredentialParameters
 
-#endregion SavePassword
+    #endregion SavePassword
 
-#endregion Credentials
+    #endregion Credentials
 
-#region Certificate Backup
+    #region Certificate Backup
 
-$ScriptBlock = [scriptblock]::Create(
+    $ScriptBlock = [scriptblock]::Create(
 
-    {
+        {
 
-        BEGIN {
+            BEGIN {
 
-            $Date = Get-Date
-            $FileType = '*.cer'
-            $BackupPathServer01 = 'C:\Certificates'
-            $BackupPathServer02 = 'C:\Certificates1'
-            $CertificatePath = 'Cert:\LocalMachine\Root'
-            $RootCertificates = Get-ChildItem -Path $CertificatePath
+                $Date = Get-Date
+                $FileType = '*.cer'
+                $BackupPathServer01 = 'C:\Certificates'
+                $BackupPathServer02 = 'C:\Certificates1'
+                $CertificatePath = 'Cert:\LocalMachine\Root'
+                $RootCertificates = Get-ChildItem -Path $CertificatePath
     
-        }
-
-        PROCESS {   
-
-        #region New-CertificateBackup
-        #Reading Certificate store and creating *.cer files
-    
-            foreach ( $Certificate in $RootCertificates ) {
-              
-                $JoinPathParameters = @{
-
-                    ChildPath = @(
-                        $($Date.ToString("yyyyMMddhhmm") )
-                        "$($Certificate.Thumbprint).cer"
-                        ) -join "+"
-                    
-                    Path = $BackupPathServer01
-
-
-                }
-                
-                $CerFilePath = Join-Path @JoinPathParameters
-                $export = ( $Certificate.Export( 'CERT' ) )
-                [System.IO.File]::WriteAllBytes( $CerFilePath, $export )
-
             }
 
-        #endregion
+            PROCESS {   
 
-        #region Copy-Item
-        #Copy certificate files to DC02   
+            #region New-CertificateBackup
+            #Reading Certificate store and creating *.cer files
     
-            $CopyItemProperties = @{
-        
-                Path = $BackupPathServer01
-                Destination = $BackupPathServer02
-                Filter =  $FileType
-                Recurse = $true
-                Container = $false
-                Force = $true
-        
-            } 
+                foreach ( $Certificate in $RootCertificates ) {
+              
+                    $JoinPathParameters = @{
 
-            Copy-Item @CopyItemProperties
+                        ChildPath = @(
+                            $($Date.ToString("yyyyMMddhhmm") )
+                            "$($Certificate.Thumbprint).cer"
+                            ) -join "+"
+                    
+                        Path = $BackupPathServer01
 
-        #endregion
 
-        #region Remove-OldCertificates
-        #Removing 5 days old certificates from both DC01 and DC02
-    
-            $Files = Get-ChildItem $BackupPathServer01, $BackupPathServer02
-            $TresholdDate = $Date.AddDays( -5 )
-            
-            foreach ( $File in $Files ) {
-
-                if ( $File.CreationTime -le $TresholdDate ) {
+                    }
                 
-                    $RemoveItemProperties = @{
+                    $CerFilePath = Join-Path @JoinPathParameters
+                    $export = ( $Certificate.Export( 'CERT' ) )
+                    [System.IO.File]::WriteAllBytes( $CerFilePath, $export )
 
-                        Path = $File.FullName
-                        Confirm = $false
-                        Force = $true
+                }
+
+            #endregion
+
+            #region Copy-Item
+            #Copy certificate files to DC02   
+    
+                $CopyItemProperties = @{
+        
+                    Path = $BackupPathServer01
+                    Destination = $BackupPathServer02
+                    Filter =  $FileType
+                    Recurse = $true
+                    Container = $false
+                    Force = $true
+        
+                } 
+
+                Copy-Item @CopyItemProperties
+
+            #endregion
+
+            #region Remove-OldCertificates
+            #Removing 5 days old certificates from both DC01 and DC02
+    
+                $Files = Get-ChildItem $BackupPathServer01, $BackupPathServer02
+                $TresholdDate = $Date.AddDays( -5 )
+            
+                foreach ( $File in $Files ) {
+
+                    if ( $File.CreationTime -le $TresholdDate ) {
+                
+                        $RemoveItemProperties = @{
+
+                            Path = $File.FullName
+                            Confirm = $false
+                            Force = $true
+
+                        }
+
+                        Remove-Item @RemoveItemProperties
 
                     }
 
-                    Remove-Item @RemoveItemProperties
-
                 }
+    
+            #endregion
 
             }
-    
-        #endregion
+
+            END {
+
+            }
 
         }
+  
+    )
 
-        END {
+    $NewJobTriggerParamerters = @{
 
-        }
+        Daily = $true
+        At = "12:00 am"
 
     }
-  
-)
 
-$NewJobTriggerParamerters = @{
+    $Trigger = New-JobTrigger @NewJobTriggerParamerters
 
-    Daily = $true
-    At = "12:00 am"
+    $NewScheduledJobOptionParameters = @{
 
-}
+        RunElevated = $true
+        RequireNetwork = $true
+        StartIfOnBattery = $true
+        ContinueIfGoingOnBattery = $true
+        StartIfIdle = $false
+        StopIfGoingOffIdle = $false
+        DoNotAllowDemandStart = $false
+        MultipleInstancePolicy = 'Queue'
 
-$Trigger = New-JobTrigger @NewJobTriggerParamerters
+    }
 
-$NewScheduledJobOptionParameters = @{
+    $Options = New-ScheduledJobOption @NewScheduledJobOptionParameters
 
-    RunElevated = $true
-    RequireNetwork = $true
-    StartIfOnBattery = $true
-    ContinueIfGoingOnBattery = $true
-    StartIfIdle = $false
-    StopIfGoingOffIdle = $false
-    DoNotAllowDemandStart = $false
-    MultipleInstancePolicy = 'Queue'
+    $ErrorActionPreference = 'Stop'
 
-}
+    $RegisterScheduledJobParameters = @{
 
-$Options = New-ScheduledJobOption @NewScheduledJobOptionParameters
-
-$ErrorActionPreference = 'Stop'
-
-$RegisterScheduledJobParameters = @{
-
-    Name = 'Backup Root Certificates'
-    #FilePath = $PSScriptPath
-    Credential = $AdminCredential
-    Authentication = 'Default'
-    Confirm = $false
-    Erroraction = 'Stop'
-    ScheduledJobOption = $Options
-    RunNow = $true
-    ScriptBlock =  $ScriptBlock
+        Name = 'Backup Root Certificates'
+        #FilePath = $PSScriptPath
+        Credential = $AdminCredential
+        Authentication = 'Default'
+        Confirm = $false
+        Erroraction = 'Stop'
+        ScheduledJobOption = $Options
+        RunNow = $true
+        ScriptBlock =  $ScriptBlock
     
-}
+    }
 
-try { 
+    try { 
  
-     Register-ScheduledJob @RegisterScheduledJobParameters
+         Register-ScheduledJob @RegisterScheduledJobParameters
 
-}
+    }
 
-catch {
+    catch {
         
-    Start-Sleep -Seconds 15
-    Unregister-ScheduledJob $RegisterScheduledJobParameters.Name
+        Start-Sleep -Seconds 15
+        Unregister-ScheduledJob $RegisterScheduledJobParameters.Name
 
-}
+    }
 
 #endregion Certificate Backup
