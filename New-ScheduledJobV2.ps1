@@ -23,9 +23,7 @@ $SecurePasswordParameters = [psobject] @{
 
 }
 
-
 $SecurePassword = ConvertTo-SecureString @SecurePasswordParameters
-
 
 $AdminCredentialParameters = [psobject] @{
 
@@ -45,9 +43,7 @@ $AdminCredential = New-Object @AdminCredentialParameters
 
 $ScriptBlock = [scriptblock]::Create(
 
-
     {
-
 
         BEGIN {
 
@@ -57,7 +53,6 @@ $ScriptBlock = [scriptblock]::Create(
             $BackupPathServer02 = 'C:\Certificates1'
             $CertificatePath = 'Cert:\LocalMachine\Root'
             $RootCertificates = Get-ChildItem -Path $CertificatePath
-
     
         }
 
@@ -81,11 +76,8 @@ $ScriptBlock = [scriptblock]::Create(
                 }
                 
                 $CerFilePath = Join-Path @JoinPathParameters
-
                 $export = ( $Certificate.Export( 'CERT' ) )
-
                 [System.IO.File]::WriteAllBytes( $CerFilePath, $export )
-                                               
 
             }
 
@@ -139,8 +131,6 @@ $ScriptBlock = [scriptblock]::Create(
 
         END {
 
-
-
         }
 
     }
@@ -171,7 +161,6 @@ $NewScheduledJobOptionParameters = @{
 
 $Options = New-ScheduledJobOption @NewScheduledJobOptionParameters
 
-
 $ErrorActionPreference = 'Stop'
 
 $RegisterScheduledJobParameters = @{
@@ -181,27 +170,23 @@ $RegisterScheduledJobParameters = @{
     Credential = $AdminCredential
     Authentication = 'Default'
     Confirm = $false
-    #Erroraction = 'Stop'
+    Erroraction = 'Stop'
     ScheduledJobOption = $Options
     RunNow = $true
     ScriptBlock =  $ScriptBlock
     
 }
 
-
-
-
 try { 
  
      Register-ScheduledJob @RegisterScheduledJobParameters
-    
+
 }
 
 catch {
         
     Start-Sleep -Seconds 15
     Unregister-ScheduledJob $RegisterScheduledJobParameters.Name
-
 
 }
 
