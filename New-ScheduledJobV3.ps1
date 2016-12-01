@@ -1,4 +1,4 @@
-﻿#region Credentials 
+#region Credentials 
 
 #region ManualPassword
 #Let user enter password
@@ -31,8 +31,15 @@
                 $BackupPathServer01 = 'C:\Certificates'
                 $BackupPathServer02 = "Microsoft.PowerShell.Core\FileSystem::\\DC02\Certificates"
                 $CertificatePath = 'Cert:\LocalMachine\Root'
-                $AllRootCertificates = Get-ChildItem -Path $CertificatePath
-
+                
+                $AllRootCertificatesUniqueParameters = @{
+                    
+                    InputObject = ( Get-ChildItem -Path $CertificatePath | sort )
+                    
+                    }
+                
+                $AllRootCertificatesUnique = Get-Unique @AllRootCertificatesUniqueParameters
+               
                 $RootCertificates = for ( $i = 0 ; $i -lt $AllRootCertificates.Count ; $i++ ) {
  
                     $RootCAFilter = @{
