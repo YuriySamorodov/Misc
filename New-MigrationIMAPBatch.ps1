@@ -10,6 +10,7 @@ for ( $i = ( $csv2.Count - 1 ) ; $i -le ( $csv2.Count - 1 ) ; $i++ ) {
 
 for ( $i = ( $csv2.Count - 1 ) ; $i -le ( $csv2.Count - 1 ) ; $i++ ) {
     [byte[]]$bytes = [System.Text.Encoding]::Unicode.GetBytes("$($csv2[0,41])") ;
+    [byte[]]$bytes = [System.Text.Encoding]::ASCII.GetBytes($($csv2[0])) + 13 + 10 + [System.Text.Encoding]::ASCII.GetBytes($($csv2[41]))
     #Out-File -InputObject $csv2[0,$i] -FilePath $Home\csv.csv -Force  ;
     New-MigrationBatch -Name "$($csv[$i-1].EmailAddress)" -AutoStart:$false -CSVData:($bytes -split ' ') -SourceEndpoint mail.sspc.org -NotificationEmails 'ysamorodov@intermedia.net' 
 }
