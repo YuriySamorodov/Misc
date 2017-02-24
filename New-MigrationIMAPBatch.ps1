@@ -1,11 +1,11 @@
-$file = 'D:\Users\ysamorodov\OneDrive\Intermedia\Downloads\57079+SSPC+ImapTasks.csv' ;
+$file = 'D:\Users\ysamorodov\OneDrive\Downloads\57079+SSPC+ImapTasks.csv' ;
 $TempFilePath = $HOME
 $csv = import-csv $file
 $csv2 = $csv | ConvertTo-Csv -NoTypeInformation
 
 for ( $i = ( $csv2.Count - 1 ) ; $i -le ( $csv2.Count - 1 ) ; $i++ ) {
     Out-File -InputObject $csv2[0,$i] -FilePath $Home\csv.csv -Force  ;
-    New-MigrationBatch -Name "$($csv[$i-1].EmailAddress)" -AutoStart:$false -CSVData:([System.IO.File]::ReadAllBytes("$Home\csv.csv")) -SourceEndpoint mail.sspc.org -NotificationEmails 'ysamorodov@intermedia.net' 
+    New-MigrationBatch -Name "$($csv[$i-1].EmailAddress)" -AutoStart:$false -CSVData:([System.IO.File]::ReadAllBytes("$Home\csv.csv")) -SourceEndpoint mail.sspc.org -NotificationEmails 'ysamorodov@.net' 
 }
 
 for ( $i = ( $csv2.Count - 1 ) ; $i -le ( $csv2.Count - 1 ) ; $i++ ) {
