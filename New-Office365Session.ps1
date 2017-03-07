@@ -62,7 +62,7 @@ function New-Office365Session {
 
     $ComplianceSessionParameters = [psobject] @{
 
-        ConnectionURI = 'https://ps.compliance.protection.outlook.com/powershell-liveid/'
+        ConnectionURI = $ConnectionURI
         ConfigurationName = 'Microsoft.Exchange'
         Authentication = 'Basic'
         AllowRedirection = $true    
