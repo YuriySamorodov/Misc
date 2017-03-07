@@ -1,14 +1,26 @@
-﻿function New-Office365Session {
+function New-Office365Session {
 
     param (
-
-        [parameter(Mandatory = $false,Position=1)]
+        
+        [parameter(Mandatory = $true, Position=1)]
         [string]$UserName = '',
-        [parameter(Mandatory = $false,Position=2)]
-        [string]$Password =  ''
+        [parameter(Mandatory = $true, Position=2)]
+        [string]$Password =  '',
+        [parameter(Mandatory = $false, Position=3)]
+        [string]$Account =  ''
 
     )
 
+
+    if ( $Account -notmatch "." ) {
+        
+        $ConnectionURI = "https://ps.outlook.com/powershell-LiveID"
+
+    }
+
+    else {
+        $ConnectionURI = "https://ps.outlook.com/powershell-LiveID?DelegatedOrg=$Account.onmicrosoft.com" 
+    }
 
     $SecurePasswordParameters = [psobject] @{
 
@@ -32,21 +44,36 @@
 
     $AdminCredential =  New-Object @AdminCredentialParameters
 
-    $SessionParameters = [psobject] @{
+    $ExchangeSessionParameters = [psobject] @{
 
-        ConnectionURI = 'https://outlook.office365.com/powershell-liveid'
+        ConnectionURI = $ConnectionURI
         ConfigurationName = 'Microsoft.Exchange'
         Authentication = 'Basic'
         AllowRedirection = $true    
         Credential = $AdminCredential
+        #AllowClobber = $true
 
     }
 
-    $session = New-PSSession @SessionParameters
+    $ExchangeSession = New-PSSession @ExchangeSessionParameters
 
-    Import-PSSession $session -AllowClobber
+    Import-PSSession $ExchangeSession -AllowClobber
 
+
+    $ComplianceSessionParameters = [psobject] @{
+
+        ConnectionURI = 'https://ps.compliance.protection.outlook.com/powershell-liveid/'
+        ConfigurationName = 'Microsoft.Exchange'
+        Authentication = 'Basic'
+        AllowRedirection = $true    
+        Credential = $AdminCredential
+        #AllowClobber = $true
+
+    }
+
+    $ComplianceSession = New-PSSession @ComplianceSessionParameters
+
+    Import-PSSession $ComplianceSession -AllowClobber
     
 
 }
-
