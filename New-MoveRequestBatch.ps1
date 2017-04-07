@@ -1,8 +1,7 @@
 $Users =  Get-MsolUser | where { $_.isLicensed -eq $true }
 $TargetDeliveryDomain = 'YCG01.mail.onmicrosoft.com'
 $EndPoint = Get-MigrationEndpoint
-$csv = $Users | select @{ n = 'EmailAddress' ; e = { $_.UserprincipalName } } | ConvertTo-Csv -NoTypeInformation
-[byte[]]$headerBytes =  [System.Text.Encoding]::ASCII.GetBytes($($csv[0]))
+[byte[]]$headerBytes =  [System.Text.Encoding]::ASCII.GetBytes("EmailAddress")
 [byte[]]$lineBreak = [System.Text.Encoding]::ASCII.GetBytes("`r`n")
 
 for ( $i = 0 ; $i -lt $Users.Count ; $i++ ) {
