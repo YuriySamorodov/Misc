@@ -1,9 +1,9 @@
-﻿$csv = Import-Csv 'D:\Users\ysamorodov\Documents\My Received Files\Contacts.csv'
+$csv = Import-Csv 'D:\Users\ysamorodov\Documents\My Received Files\Contacts.csv'
 $csv = $csv | sort mail
 $columnNames = $csv | Get-Member -MemberType NoteProperty | Select-Object Name
 $ErrorActionPreference = 'SilentlyContinue'
 
-for ( $i = 0 ; $i -lt 715 ; $i++ ) {
+for ( $i = 0 ; $i -lt $csv.Count ; $i++ ) {
 
 #region Progress
 
@@ -19,13 +19,14 @@ for ( $i = 0 ; $i -lt 715 ; $i++ ) {
 
 #endregion
 
-
-
+#region Empty values check
     for ( $j = 0 ; $j -lt $columnNames.Count ; $j++ ) {
         if ( -not $csv[$i].$($columnNames[$j].Name) ) {
             $csv[$i].$($columnNames[$j].Name) = ' '
         }
     }
+#endregion
+
 
     try {
         $ErrorActionPreference = 'Stop'
@@ -45,7 +46,7 @@ for ( $i = 0 ; $i -lt 715 ; $i++ ) {
             ExternalEmailAddress = $csv[$i].mail               
         }
         New-MailContact @NewMailContactParameters | Tee-Object -Variable 'mailcontact'         
-        Write-Output "New"
+        #Write-Output "New"
     }
 
     finally {
