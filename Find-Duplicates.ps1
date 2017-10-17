@@ -17,4 +17,3 @@ for ( $i = 0 ; $i -lt $msolUsers.Count ; $i++ ) {
         $i++
     }
 }
-$msolUsers.Remove($dupUsers[0..$($dupUsers.Count-1)])
