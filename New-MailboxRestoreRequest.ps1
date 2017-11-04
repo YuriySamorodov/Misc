@@ -11,9 +11,17 @@ $ErrorActionPreference ='Stop'
 foreach ( $mbx in $Mailboxes3 ) {
 
     try { 
-
-        Disable-Mailbox -Identity $mbx.Identity -Confirm:$false
-        Update-StoreMailboxState -Database $mbx.Database -Identity $mbx.ExchangeGuid
+        $DisableMailbox = @{
+            Identity = $mbx.Identity
+            Confirm = $false
+        }
+        DisableMailbox @DisableMailbox
+        
+        $UpdateStoreMailboxState = @{
+            Database = $mbx.Database
+            Identity = $mbx.ExchangeGuid
+        }
+        Update-StoreMailboxState @UpdateStoreMailboxState
         Start-Sleep -Seconds 5
     
     }
