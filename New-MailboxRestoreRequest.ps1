@@ -8,7 +8,7 @@ $Mailboxes = Get-Mailbox -OrganizationalUnit primesports | where { $_.UserPrinci
 
 $ErrorActionPreference ='Stop'
 
-foreach ( $mbx in $Mailboxes3 ) {
+foreach ( $mbx in $Mailboxes ) {
 
     try { 
         $DisableMailbox = @{
