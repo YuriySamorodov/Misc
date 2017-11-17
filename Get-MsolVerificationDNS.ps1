@@ -10,7 +10,7 @@ for ( $i = 0 ; $i -lt $unverifiedDomains.Count ; $i++ ) {
 
         @{
         Name  = 'TXTRecord'
-        Expression = { $VerificationDNS.Label.Substring( 0 , $VerificationDNS.Label.IndexOf('.') ) }
+        Expression = { "MS=" + $VerificationDNS.Label.Substring( 0 , $VerificationDNS.Label.IndexOf('.') ) }
         }
     )
 
