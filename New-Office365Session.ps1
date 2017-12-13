@@ -34,7 +34,7 @@ function New-Office365Session {
 
         Set-O365Credentials
 
-    function Connect-OExchange {
+    function Connect-Exchange {
     
         if ( $Account -notmatch "." ) {
             $ConnectionURI = $URIExchangeOnline
