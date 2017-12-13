@@ -6,7 +6,12 @@ function New-Office365Session {
         [parameter(Mandatory = $true, Position=2)]
         [string]$Pass =  '',
         [parameter(Mandatory = $false, Position=3)]
-        [ValidateSet('AzureAD', 'Exchange', 'Compliance', 'SharePoint','Skype','All')]
+        [ValidateSet('AzureAD',
+                     'Exchange',
+                     'Compliance',
+                     'SharePoint',
+                     'Skype',
+                     'All')]
         [string]$Module =  'Exchange',
         [parameter(Mandatory = $false, Position=4)]
         [string]$Account =  ''
