@@ -33,7 +33,7 @@ function New-Office365Session {
             TypeName = 'System.Management.Automation.PSCredential'
             ArgumentList = ( $UserName , $SecurePassword ) 
         }
-        $AdminCredential =  New-Object @AdminCredentialParameters
+        $script:AdminCredential =  New-Object @AdminCredentialParameters
     
     }
 
