@@ -11,7 +11,7 @@ function ConvertTo-MailEnabledUser () {
     $ErrorPreference = 'Stop'
     try {
         $Mailbox = Get-Mailbox $Identity ; 
-        $EmailAddresses = ($mailbox.EmailAddresses).ProxyAddressString
+        $EmailAddresses = $mailbox.EmailAddresses | select -expand ProxyAddressString
         $EmailAddresses += "X500:$($Mailbox.LegacyExchangeDN)"
         
         $DisableMailboxParameters = @{
