@@ -1,5 +1,5 @@
-function Convertto-MailEnabledUser () {
-    [cmdletbinding()]
+function ConvertTo-MailEnabledUser () {
+    #[cmdletbinding()]
 
     param (    
         [parameter(Mandatory = $true, Position=1)]
@@ -14,7 +14,7 @@ function Convertto-MailEnabledUser () {
         $EmailAddresses = ($mailbox.EmailAddresses).ProxyAddressString
         $EmailAddresses += "X500:$($Mailbox.LegacyExchangeDN)"
         
-        DisableMailboxParameters = @{
+        $DisableMailboxParameters = @{
             Identity = $Mailbox.Identity
             Confirm = $false
         }
@@ -23,7 +23,7 @@ function Convertto-MailEnabledUser () {
         $EnableMEUParameters = @{
             Identity = $Mailbox.Identity
             PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
-            $ExternalEmailAddress = $ExternalEmailAddress
+            ExternalEmailAddress = $ExternalEmailAddress
             Confirm = $false
         }
         Enable-MailUser @EnableMEUParameters
