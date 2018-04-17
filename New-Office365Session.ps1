@@ -39,7 +39,7 @@ function New-Office365Session {
 
     Set-O365Credentials
     
-    $script:IEConfig = New-PSSessionOption -ProxyAccessType IEConfig
+    $script:IEConfig = New-PSSessionOption -ProxieyAccessType IEConfig
 
     function Connect-Exchange {
     
@@ -57,7 +57,7 @@ function New-Office365Session {
             Authentication = 'Basic'
             AllowRedirection = $true    
             Credential = $AdminCredential
-            SessionOption = $IEConfig
+            #SessionOption = $IEConfig
             #AllowClobber = $true
         }
         $ExchangeSession = New-PSSession @ExchangeSessionParameters
