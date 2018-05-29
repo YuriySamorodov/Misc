@@ -1,6 +1,6 @@
 function Invoke-Script {
     param (
-    [string]$ComputerName,
+    [string[]]$ComputerName,
     [scriptblock]$ScriptBlock,
     [pscredential]$Credential
 )
