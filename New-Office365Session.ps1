@@ -58,7 +58,8 @@ function New-Office365Session {
             #SessionOption = $IEConfig
             #AllowClobber = $true
         }
-        $ExchangeSession = New-PSSession @ExchangeSessionParameters
+        $ExchangeSession = 
+        sion @ExchangeSessionParameters
         Import-PSSession $ExchangeSession -AllowClobber | Out-Null
 
     }
