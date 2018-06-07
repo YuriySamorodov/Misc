@@ -25,7 +25,7 @@ function New-Office365Session {
         $SecurePasswordParameters = [psobject] @{
             String = $Pass
             AsPlainText = $true
-            Force = $true
+            Force = $tru
         }
         $SecurePassword = ConvertTo-SecureString @SecurePasswordParameters
     
@@ -39,8 +39,6 @@ function New-Office365Session {
 
     Set-O365Credentials
     
-    $script:IEConfig = New-PSSessionOption -ProxieyAccessType IEConfig
-
     function Connect-Exchange {
     
         if ( $Account -notmatch "." ) {
