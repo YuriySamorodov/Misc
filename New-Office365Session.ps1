@@ -14,18 +14,22 @@ function New-Office365Session {
                      'All')]
         [string]$Module =  'Exchange',
         [parameter(Mandatory = $false, Position=4)]
+        [ValidateSet('RPS',
+                     'PSWS')]
+        [string]$ProxyMethod = 'RPS',
+        [parameter(Mandatory = $false, Position=5)]
         [string]$Account =  ''
     )
 
-    $URIExchangeOnline = 'https://ps.outlook.com/powershell-LiveID'
-    $URICompliance = 'https://ps.compliance.protection.outlook.com/powershell-LiveID'
+    $URIExchangeOnline = "https://ps.outlook.com/powershell-LiveID/?proxymethod=$($ProxyMethod)"
+    $URICompliance = "https://ps.compliance.protection.outlook.com/powershell-LiveID/?proxymethod=$($ProxyMethod)"
 
     function Set-O365Credentials {
     
         $SecurePasswordParameters = [psobject] @{
             String = $Pass
             AsPlainText = $true
-            Force = $tru
+            Force = $true
         }
         $SecurePassword = ConvertTo-SecureString @SecurePasswordParameters
     
@@ -58,16 +62,13 @@ function New-Office365Session {
             #SessionOption = $IEConfig
             #AllowClobber = $true
         }
-        $ExchangeSession = 
-        sion @ExchangeSessionParameters
-        Import-PSSession $ExchangeSession -AllowClobber | Out-Null
+        $ExchangeSession = New-PSSession @ExchangeSessionParameters
+        Import-PSSession $ExchangeSession -AllowClobber -Prefix "EXO" | Out-Null
 
     }
 
     function Connect-SecurityAndCompliance {
 
-        $URICompliance = 'https://ps.compliance.protection.outlook.com/powershell-LiveID'
-    
         $ComplianceSessionParameters = [psobject] @{
             ConnectionURI = $URICompliance
             ConfigurationName = 'Microsoft.Exchange'
@@ -78,7 +79,7 @@ function New-Office365Session {
             #AllowClobber = $true
         }
         $ComplianceSession = New-PSSession @ComplianceSessionParameters
-        Import-PSSession $ComplianceSession -AllowClobber | Out-Null
+        Import-PSSession $ComplianceSession -AllowClobber -Prefix "SC" | Out-Null
     }
 
     function Connect-All {
