@@ -18,7 +18,7 @@ function New-Office365Session {
                      'PSWS')]
         [string]$ProxyMethod = 'RPS',
         [parameter(Mandatory = $false, Position=5)]
-        [string]$Account =  ''
+        [string]$Account =  '',
         [parameter(Mandatory = $false, Position=6)]
         [switch]$Prefix = $false,
     )
