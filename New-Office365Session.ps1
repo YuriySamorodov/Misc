@@ -19,6 +19,8 @@ function New-Office365Session {
         [string]$ProxyMethod = 'RPS',
         [parameter(Mandatory = $false, Position=5)]
         [string]$Account =  ''
+        [parameter(Mandatory = $false, Position=6)]
+        [switch]$Prefix = $false,
     )
 
     $URIExchangeOnline = "https://ps.outlook.com/powershell-LiveID/?proxymethod=$($ProxyMethod)"
@@ -63,7 +65,11 @@ function New-Office365Session {
             #AllowClobber = $true
         }
         $ExchangeSession = New-PSSession @ExchangeSessionParameters
-        Import-PSSession $ExchangeSession -AllowClobber -Prefix "EXO" | Out-Null
+        if ( $switch -eq $true ) {
+            Import-PSSession $ExchangeSession -AllowClobber -Prefix "EXO" | Out-Null
+            } else {
+                Import-PSSession $ExchangeSession -AllowClobber | Out-Null
+            }
 
     }
 
@@ -79,7 +85,11 @@ function New-Office365Session {
             #AllowClobber = $true
         }
         $ComplianceSession = New-PSSession @ComplianceSessionParameters
-        Import-PSSession $ComplianceSession -AllowClobber -Prefix "SC" | Out-Null
+        if ( $switch -eq $true ) {
+            Import-PSSession $ComplianceSession -AllowClobber -Prefix "SC" | Out-Null
+            } else {
+                Import-PSSession $ComplianceSession -AllowClobber | Out-Null
+            }
     }
 
     function Connect-All {
