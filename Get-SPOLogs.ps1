@@ -1,8 +1,12 @@
-$start = Get-Date ;
 $searchGuid = New-Guid
 $resultSize = 5000
 [datetime]$startDate = '10/09/2018'
 [datetime]$endDate = '10/13/2018'
+$recordType = @(
+    'SharePoint',
+    'SharepointFileOperation',
+    'SharePointSharingOperation'
+)
 $auditData = @() ;
 function SearchUnifiedAuditLog {
 
@@ -11,12 +15,13 @@ function SearchUnifiedAuditLog {
         SessionId = $searchGuid
         StartDate = $startDate
         EndDate = $endDate
+        RecordType = $recordType
         ResultSize = $resultSize
     }
     Search-UnifiedAuditLog @SearchUnifiedAuditLogParameters ;
 }
 
-$auditData += SearchUnifiedAuditLog
+$auditData = SearchUnifiedAuditLog
 Start-Sleep -Milliseconds 500
 
 do {
@@ -25,4 +30,4 @@ $auditData += SearchUnifiedAuditLog
 Start-Sleep -Milliseconds 500
 }
 while ( $auditData.Count % $resultSize -eq 0 ) ;
-$end = Get-Date
+
