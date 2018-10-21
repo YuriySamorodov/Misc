@@ -2,7 +2,7 @@ $start = Get-Date
 
 $resultSize = 5000
 [datetime]$startDate = '07/22/2018 00:00:00'
-[datetime]$endDate = '10/20/2018 00:00:00'
+[datetime]$endDate = '10/22/2018 00:00:00'
 $currentStart = $null
 $CurrentEnd = $null
 $Interval = 15
