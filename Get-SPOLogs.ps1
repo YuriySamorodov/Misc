@@ -1,8 +1,8 @@
 $start = Get-Date
 
 $resultSize = 5000
-[datetime]$startDate = '07/22/2018 00:00:00'
-[datetime]$endDate = '10/22/2018 00:00:00'
+[datetime]$startDate = '07/23/2018 10:15:00'
+[datetime]$endDate = '07/24/2018 00:00:00'
 $currentStart = $null
 $CurrentEnd = $null
 $Interval = 15
@@ -14,7 +14,7 @@ $recordType = @(
 $results = @() ;
 
 function SearchUnifiedAuditLog {
-    $global:SearchUnifiedAuditLogParameters = @{
+    $SearchUnifiedAuditLogParameters = @{
         SessionCommand = 'ReturnLargeSet'
         SessionId = $SessionId
         StartDate = $CurrentStart
@@ -43,6 +43,15 @@ do{
         }
         while ( $auditData.Count % $resultSize -eq 0 ) 
     $results += $auditData
+    if ($CurrentEnd.TimeOfDay.TotalHours -match "0|12") {
+        $SPOLogs = $results | where { $_.recordType -match "SharePoint" }
+        $SPOLogs = $SPOLogs | Select-Object -ExpandProperty AuditData
+        $SPOLogs = $SPOLogs | ConvertFrom-Json
+        $LogName = "$($currentStart.ToString("yyyyMMdd-HHmm"))-SharepointOnlineLogs.log"
+        $SPOLogs | export-csv -NoTypeInformation $LogName
+        $results = $null
+        $SPOLogs = $null
+    }
     $currentStart = $currentEnd
     }
 until ( $currentStart -eq $endDate )
