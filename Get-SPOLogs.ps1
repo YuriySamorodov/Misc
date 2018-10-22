@@ -43,7 +43,7 @@ do{
         }
         while ( $auditData.Count % $resultSize -eq 0 ) 
     $results += $auditData
-    if ($CurrentEnd.TimeOfDay.TotalHours -match "0|12") {
+    if ($CurrentEnd.TimeOfDay.TotalHours -match "^0$|^12$") {
         $SPOLogs = $results | where { $_.recordType -match "SharePoint" }
         $SPOLogs = $SPOLogs | Select-Object -ExpandProperty AuditData
         $SPOLogs = $SPOLogs | ConvertFrom-Json
