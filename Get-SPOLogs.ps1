@@ -1,7 +1,7 @@
 $start = Get-Date
 
 $resultSize = 5000
-[datetime]$startDate = '07/23/2018 10:15:00'
+[datetime]$startDate = '07/23/2018 11:45:00'
 [datetime]$endDate = '07/24/2018 00:00:00'
 $currentStart = $null
 $CurrentEnd = $null
@@ -47,7 +47,7 @@ do{
         $SPOLogs = $results | where { $_.recordType -match "SharePoint" }
         $SPOLogs = $SPOLogs | Select-Object -ExpandProperty AuditData
         $SPOLogs = $SPOLogs | ConvertFrom-Json
-        $LogName = "$($currentStart.ToString("yyyyMMdd-HHmm"))-SharepointOnlineLogs.log"
+        $LogName = "$($currentEnd.ToString("yyyyMMddHHmm"))-SharepointOnlineLogs.log"
         $SPOLogs | export-csv -NoTypeInformation $LogName
         $results = $null
         $SPOLogs = $null
