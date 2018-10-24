@@ -43,6 +43,7 @@ foreach ( $recordType in $recordTypes) {
             Import-Module .\New-Office365Session.ps1 ;
             New-Office365Session 'yuriy.samorodov@veeam.com' 'K@znachey'
         } -ArgumentList $startDate,$endDate,$recordType,$ResultSize,$interval
+        Get-PSSession | Remove-PSSession
         $i = $i + $interval
     }
 }
