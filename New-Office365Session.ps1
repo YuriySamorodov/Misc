@@ -65,10 +65,10 @@ function New-Office365Session {
             #AllowClobber = $true
         }
         $ExchangeSession = New-PSSession @ExchangeSessionParameters
-        if ( $switch -eq $true ) {
-            Import-PSSession $ExchangeSession -AllowClobber -Prefix "EXO" | Out-Null
+        if ( $Prefix -eq $true ) {
+            Import-PSSession $ExchangeSession -AllowClobber -Prefix "EXO" -DisableNameChecking | Out-Null
             } else {
-                Import-PSSession $ExchangeSession -AllowClobber | Out-Null
+                Import-PSSession $ExchangeSession -AllowClobber -DisableNameChecking | Out-Null
             }
 
     }
