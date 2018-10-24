@@ -11,7 +11,7 @@ $recordTypes = @(
     'SharePointSharingOperation'
 )
 
-$jobs = foreach ( $recordType in $recordTypes) {
+foreach ( $recordType in $recordTypes) {
     for ($i = 0 ; $i -lt 60) {
         $JobName = "SPOLogs$($EndDate.ToString("yyyyMMddHHmm"))-$($RecordType)"
         Start-Job -Name $JobName -ScriptBlock {   
@@ -38,6 +38,10 @@ $jobs = foreach ( $recordType in $recordTypes) {
                 }
                 Search-UnifiedAuditLog @SearchUnifiedAuditLogParameters
             } while ($auditData.Count % 5000 -eq 0 )
-        } -ArgumentList $interval,$startDate,$endDate,$recordTypes,$ResultSize
+        } -InitializationScript {
+            Import-Module .\New-Office365Session.ps1 ;
+            New-Office365Session 'yuriy.samorodov@veeam.com' 'K@znachey'
+        } 
+        -ArgumentList $interval,$startDate,$endDate,$recordTypes,$ResultSize
     }
 }
