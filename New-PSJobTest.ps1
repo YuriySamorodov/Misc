@@ -18,8 +18,8 @@ foreach ( $recordType in $recordTypes) {
            Write-Output $JobName 
         } -InitializationScript {
             Import-Module .\New-Office365Session.ps1 ;
-            New-Office365Session yuriy.samorodov@veeam.com K@znachey
-        } 
-        -ArgumentList $interval,$startDate,$endDate,$recordTypes,$ResultSize
+            New-Office365Session 'yuriy.samorodov@veeam.com' 'K@znachey'
+        } -ArgumentList $interval,$startDate,$endDate,$recordTypes,$ResultSize
+        $i = $i + 15
     }
 }
