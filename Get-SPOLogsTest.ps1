@@ -10,13 +10,10 @@ $recordTypes = @(
     'SharepointFileOperation',
     'SharePointSharingOperation'
 )
+
 $jobs = foreach ( $recordType in $recordTypes) {
     for ($i = 0 ; $i -lt 60) {
-        if ( $i = 0 ) {
-            $JobName = "SPOLogs$($EndDate.ToString("yyyyMMddHH"))0$($i)00-$($RecordType)"
-        } else { 
-            $JobName = "SPOLogs$($EndDate.ToString("yyyyMMddHH"))$($i)00-$($RecordType)"
-        }
+        $JobName = "SPOLogs$($EndDate.ToString("yyyyMMddHHmm"))-$($RecordType)"
         Start-Job -Name $JobName -ScriptBlock {   
             param (
                 $StartDate,

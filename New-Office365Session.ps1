@@ -86,9 +86,9 @@ function New-Office365Session {
         }
         $ComplianceSession = New-PSSession @ComplianceSessionParameters
         if ( $switch -eq $true ) {
-            Import-PSSession $ComplianceSession -AllowClobber -Prefix "SC" | Out-Null
+            Import-PSSession $ComplianceSession -AllowClobber -Prefix "SC" -DisableNameChecking | Out-Null
             } else {
-                Import-PSSession $ComplianceSession -AllowClobber | Out-Null
+                Import-PSSession $ComplianceSession -AllowClobber -DisableNameChecking | Out-Null
             }
     }
 
