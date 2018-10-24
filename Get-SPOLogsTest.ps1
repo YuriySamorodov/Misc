@@ -18,8 +18,9 @@ foreach ( $recordType in $recordTypes) {
             param (
                 $StartDate,
                 $EndDate,
-                $RecordTypes,
-                $ResultSize
+                $RecordType,
+                $ResultSize,
+                $interval
             )
             $auditData = @()
             $SessionId = New-Guid
@@ -37,11 +38,11 @@ foreach ( $recordType in $recordTypes) {
                     ResultSize = $ResultSize
                 }
                 Search-UnifiedAuditLog @SearchUnifiedAuditLogParameters
-            } while ($auditData.Count % 5000 -eq 0 )
+            } while ($auditData.Count % $ResultSize -eq 0 )
         } -InitializationScript {
             Import-Module .\New-Office365Session.ps1 ;
             New-Office365Session 'yuriy.samorodov@veeam.com' 'K@znachey'
-        } 
-        -ArgumentList $interval,$startDate,$endDate,$recordTypes,$ResultSize
+        } -ArgumentList $startDate,$endDate,$recordType,$ResultSize,$interval
+        $i = $i + $interval
     }
 }
