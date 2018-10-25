@@ -12,6 +12,19 @@ $ConnectionURI = "https://ps.outlook.com/powershell-LiveID/?proxymethod=RPS"
 
 
 
+function SearchUnifiedAuditLog {
+    
+    $SearchUnifiedAuditLogParameters = @{
+        SessionCommand = 'ReturnLargeSet'
+        SessionId = New-Guid,
+        StartDate = $CurrentStart,
+        EndDate = $CurrentEnd,
+        FreeText = "sharepoint\.com",
+        ResultSize = 5000
+    }
+    
+    Search-UnifiedAuditLog @SearchUnifiedAuditLogParameters
+}
 
 $jobs = @()
 do  {
@@ -37,72 +50,26 @@ do  {
             $auditData = @()
             $SessionId = New-Guid
             do {
-                $auditData += SearchUnifiedAuditLog
+                
             } while ( $auditData.Count % $ResultSize -eq 0 )
         } -InitializationScript {
-            
-            function Set-O365Credentials {
-
-                $SecurePasswordParameters = [psobject] @{
-                    String = $Pass
-                    AsPlainText = $true
-                    Force = $true
-                }
-                $SecurePassword = ConvertTo-SecureString @SecurePasswordParameters
-
-                $AdminCredentialParameters = [psobject] @{
-                    TypeName = 'System.Management.Automation.PSCredential'
-                    ArgumentList = ( $UserName , $SecurePassword ) 
-                }
-                $script:AdminCredential =  New-Object @AdminCredentialParameters
+           #Import-Module .\New-Office365Session.ps1 ;
+            #New-Office365Session 'yuriy.samorodov@veeam.com' 'K@znachey'
+            $AdminCredentialParameters = [psobject] @{
+                TypeName = 'System.Management.Automation.PSCredential'
+                ArgumentList = ( 'svcexchlogcollector@veeam.com' , ( 'LuB&BN0GIrWV' | ConvertTo-SecureString -AsPlainText -Force ) ) 
             }
+            $script:AdminCredential =  New-Object @AdminCredentialParameters
 
-            Set-O365Credentials
-
-            function Connect-Exchange {
-
-                $ExchangeSessionParameters = [psobject] @{
-                    ConnectionURI = $ConnectionURI
-                    ConfigurationName = 'Microsoft.Exchange'
-                    Authentication = 'Basic'
-                    AllowRedirection = $true    
-                    Credential = $AdminCredential
-                    AllowClobber = $true
-            
-                }
-                $ExchangeSession = New-PSSession @ExchangeSessionParameters
-                
-                $ImportSessionParameters =  @{
-                    Name = $ExchangeSession
-                    DisableNameChecking = $true
-                    CommandName = @(
-                        'Search-UnifiedAuditLog'
-                        'Get-MessageTrace'
-                        'Get-MessageTraceDetail'
-                        'Get-MessageTrackingReport'
-                        'Get-Mailbox'
-                        )
-                    AllowClobber = $true
-
-                }
-                Import-PSSession @$ImportSessionParameters  | Out-Null  
+            $ExchangeSessionParameters = [psobject] @{
+                ConnectionURI = "https://ps.outlook.com/powershell-LiveID/?proxymethod=RPS"
+                ConfigurationName = 'Microsoft.Exchange'
+                Authentication = 'Basic'
+                AllowRedirection = $true    
+                Credential = $AdminCredential
             }
-           
-           Connect-Exchange
-           
-           function SearchUnifiedAuditLog {
-    
-            $SearchUnifiedAuditLogParameters = @{
-                SessionCommand = 'ReturnLargeSet'
-                SessionId = New-Guid
-                StartDate = $CurrentStart
-                EndDate = $CurrentEnd
-                FreeText = "sharepoint\.com"
-                ResultSize = 5000
-            }         
-            Search-UnifiedAuditLog @SearchUnifiedAuditLogParameters
-        }
-         
+            $ExchangeSession = New-PSSession @ExchangeSessionParameters
+            Import-PSSession -Session $ExchangeSession -CommandName Search-UnifiedAuditLog -DisableNameChecking | Out-Null
         } -ArgumentList $СurrentStart,$CurrentEnd, $interval,$ResultSize
         Write-Host $JobName
         #Write-Output $Jobs
