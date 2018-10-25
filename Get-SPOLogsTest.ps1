@@ -5,11 +5,18 @@ param (
 
 $interval = 15
 $ResultSize = 5000
-
-do  {
+$recordTypes = @(
+    'SharePoint',
+    'SharepointFileOperation',
+    'SharePointSharingOperation'
+)
+$jobs = foreach ( $recordType in $recordTypes) {
     for ($i = 0 ; $i -lt 60) {
         $JobName = "SPOLogs$($EndDate.ToString("yyyyMMddHHmm"))"
         $jobs = @()
+do  {
+    for ($i = 0 ; $i -lt 60) {
+        $JobName = "SPOLogs_$($EndDate.ToString("yyyyMMddHHmm"))"
         $jobs += Start-Job -Name $JobName -ScriptBlock {   
             param (
                 $StartDate,
@@ -43,28 +50,3 @@ do  {
             }
             $script:AdminCredential =  New-Object @AdminCredentialParameters
 
-            $ExchangeSessionParameters = [psobject] @{
-                ConnectionURI = "https://ps.outlook.com/powershell-LiveID/?proxymethod=RPS"
-                ConfigurationName = 'Microsoft.Exchange'
-                Authentication = 'Basic'
-                AllowRedirection = $true    
-                Credential = $AdminCredential
-            }
-            $ExchangeSession = New-PSSession @ExchangeSessionParameters
-            Import-PSSession -Session $ExchangeSession -CommandName Search-UnifiedAuditLog | Out-Null
-        } -ArgumentList $interval,$startDate,$ResultSize
-        Get-PSSession | Remove-PSSession
-        $i = $i + $interval
-    }
-    if ($jobs.Count -eq 12) {
-        $jobs | Wait-Job | Out-Null
-        $results = $jobs | Receive-Job
-        $jobs | Remove-Job
-        $results = $results | Select-Object -ExpandProperty AuditData
-        $results = $results | ConvertFrom-Json
-        $results | export-csv -NoTypeInformation "$($JobName).log"
-        Start-Sleep -Seconds 60
-    }
-} while ( 
-    $currentStart -le $EndDate
-)
