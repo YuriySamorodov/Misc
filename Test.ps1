@@ -7,10 +7,18 @@ param (
     [datetime]$endDate = ( Get-Date ).AddDays(-2).Date,
     
     [parameter(Mandatory=$false,Position=3)]
+    $RecordType,
+    
+    [parameter(Mandatory=$false,Position=4)]
     $LogPath = 'C:\Users\yury.samorodov\Downloads\SPOLogs\',
 
+
     [parameter(Mandatory=$false,Position=4)]
-    [int]$resultSize = 5000
+    [int]$resultSize = 5000,
+
+    [parameter(Mandatory=$false,Position=5)]
+    [int]$Interval = 15
+
  )
 
 $results = @() ;
@@ -21,7 +29,7 @@ function SearchUnifiedAuditLog {
         SessionId = $SessionId
         StartDate = $CurrentStart
         EndDate = $CurrentEnd
-        #RecordType = [string]($recordType -join ',')
+        RecordType = $recordType
         ResultSize = $ResultSize
     }
     Search-UnifiedAuditLog @SearchUnifiedAuditLogParameters ;
@@ -31,6 +39,7 @@ function SearchUnifiedAuditLog {
 #$auditData = SearchUnifiedAuditLog
 #Start-Sleep -Milliseconds 500
 #Write-Host "$($auditData[-1].ResultCount)"
+
 do{
     $auditData = @()
     $SessionId = New-Guid
@@ -39,7 +48,12 @@ do{
         if ( $currentStart -eq $null ) {
             $currentStart = $startDate
         }
+
         $CurrentEnd = $currentStart.AddMinutes($Interval)
+        Start-Job -Name "SPO$($CurrentStart.TimeOfDay.Hours)" -ScriptBlock { 
+            SearchUnifiedAuditLog
+        }
+        
         $auditData += SearchUnifiedAuditLog
         Write-Host "$($CurrentStart): $($auditData[-1].ResultIndex)"
         Start-Sleep -Milliseconds 500
