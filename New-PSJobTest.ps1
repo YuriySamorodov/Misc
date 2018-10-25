@@ -1,27 +1,13 @@
-param (
-    $StartDate,
-    $EndDate
-)
-
-
-$interval = 15
-$ResultSize = 5000
-$recordTypes = @(
-    'SharePoint',
-    'SharepointFileOperation',
-    'SharePointSharingOperation'
-)
-
+$jobs = @()
 $currentStart = $null
 do {
-    $jobs = for ($i = 0 ; $i -lt 60) {
-        if (
+    if (
             $currentStart -eq $null
         ) {
             $currentStart = $StartDate
         }
-        $JobName = "SPOLogs$($CurrentStart.ToString("yyyyMMddHHmm"))-$($RecordType)"
-        Start-Job -Name $JobName -ScriptBlock {   
+        $JobName = "SPOLogs$($CurrentStart.ToString("yyyyMMddHHmm"))"
+        $jobs += Start-Job -Name $JobName -ScriptBlock {   
         param (
             $JobName
         )
@@ -46,15 +32,21 @@ do {
             Import-PSSession -Session $ExchangeSession -CommandName Search-UnifiedAuditLog | Out-Null
         } -ArgumentList $JobName
         $i = $i + $interval
-        Remove-PSSession $ExchangeSession
+        Get-PSSession | Remove-PSSession
         Start-Sleep -Milliseconds 500
+        
+    #Start-Sleep -Seconds 60
+    #$jobs = Get-Job
+    if ($jobs.Count -eq 12 ) {
+        $jobs | Wait-Job | Out-Null
+        $results = $jobs | Receive-Job
+        $jobs | Remove-Job
+        $results | export-csv -NoTypeInformation "$($Jobname).log"
+        $currentStart = $currentStart.AddHours(1)
+        Start-Sleep -Seconds 60
+    } else {
+        continue
     }
-    Start-Sleep -Seconds 60
-    $jobs | Wait-Job | Out-Null
-    $jobs | Receive-Job
-    $jobs | Remove-Job
-    $currentStart = $currentStart.AddHours(1)
-    Start-Sleep -Milliseconds 500
 } 
 until ( 
     $currentStart -eq $EndDate 
