@@ -10,22 +10,6 @@ $StartDate = $StartDate.Date.AddHours(-48)
 $EndDate = $StartDate.AddHours(24)
 $ConnectionURI = "https://ps.outlook.com/powershell-LiveID/?proxymethod=RPS"
 
-
-
-function SearchUnifiedAuditLog {
-    
-    $SearchUnifiedAuditLogParameters = @{
-        SessionCommand = 'ReturnLargeSet'
-        SessionId = New-Guid,
-        StartDate = $CurrentStart,
-        EndDate = $CurrentEnd,
-        FreeText = "sharepoint\.com",
-        ResultSize = 5000
-    }
-    
-    Search-UnifiedAuditLog @SearchUnifiedAuditLogParameters
-}
-
 $jobs = @()
 do  {
     #Date Managemment
@@ -41,36 +25,17 @@ do  {
         $JobName = "SPOLogs_$($CurrentStart.ToString("yyyyMMddHHmm"))"
         $jobs += Start-Job -Name $JobName -ScriptBlock {   
             param (
-                $СurrentStart,
-                $CurrentEnd,
-                $interval,
+                $CurrentStart,
                 $ResultSize
-                
             )
-            $auditData = @()
-            $SessionId = New-Guid
             do {
-                
-            } while ( $auditData.Count % $ResultSize -eq 0 )
+                $AuditData += SearchUnifiedAuditLog
+            } while ( $AuditData.Count % 5000 -eq 0 )
         } -InitializationScript {
-           #Import-Module .\New-Office365Session.ps1 ;
-            #New-Office365Session 'yuriy.samorodov@veeam.com' 'K@znachey'
-            $AdminCredentialParameters = [psobject] @{
-                TypeName = 'System.Management.Automation.PSCredential'
-                ArgumentList = ( 'svcexchlogcollector@veeam.com' , ( 'LuB&BN0GIrWV' | ConvertTo-SecureString -AsPlainText -Force ) ) 
-            }
-            $script:AdminCredential =  New-Object @AdminCredentialParameters
-
-            $ExchangeSessionParameters = [psobject] @{
-                ConnectionURI = "https://ps.outlook.com/powershell-LiveID/?proxymethod=RPS"
-                ConfigurationName = 'Microsoft.Exchange'
-                Authentication = 'Basic'
-                AllowRedirection = $true    
-                Credential = $AdminCredential
-            }
-            $ExchangeSession = New-PSSession @ExchangeSessionParameters
-            Import-PSSession -Session $ExchangeSession -CommandName Search-UnifiedAuditLog -DisableNameChecking | Out-Null
-        } -ArgumentList $СurrentStart,$CurrentEnd, $interval,$ResultSize
+            Import-Module .\Connect-Exchange.ps1 ;
+            Connect-Exchange 'yuriy.samorodov@veeam.com' 'K@znachey' ;
+            Import-Module .\Search-O365UnifiedAuditLogs.ps1 ;
+        } -ArgumentList $СurrentStart,$ResultSize
         Write-Host $JobName
         #Write-Output $Jobs
         Get-PSSession | Remove-PSSession

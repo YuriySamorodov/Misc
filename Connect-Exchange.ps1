@@ -2,7 +2,9 @@
 function Set-O365Credentials {
 
     param (
+        [parameter(Position=1)]
         $UserName,
+        [parameter(Position=2)]
         $Password
     )
 
