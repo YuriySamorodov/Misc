@@ -1,10 +1,14 @@
 function SearchUnifiedAuditLog {
+    param (
+        $CurrentStart,
+        $CurrentEnd
+    )
     
     $SearchUnifiedAuditLogParameters = @{
+        StartDate = $CurrentStart
+        EndDate = $CurrentEnd
         SessionCommand = 'ReturnLargeSet'
         SessionId = New-Guid
-        StartDate = $CurrentStart
-        EndDate = $CurrentEn
         FreeText = "sharepoint\.com"
         ResultSize = 5000
     }
