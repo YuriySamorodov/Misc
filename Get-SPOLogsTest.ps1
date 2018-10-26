@@ -17,6 +17,7 @@ do  {
         }
     
     #Getting log data in an hour timespan using 15 minutes chunks
+    $scriptStart = Get-Date
     for ($i = 0 ; $i -lt 60) {
         $AuditData = New-Object System.Collections.ArrayList
         $SessionId = New-Guid
@@ -29,26 +30,31 @@ do  {
             SessionCommand = 'ReturnLargeSet'
             FreeText = "sharepoint\.com"
             ResultSize = $ResultSize
-            OutVariable = '+AuditData'
+            #OutVariable = '+data'
         }
-        $jobs += Start-Job -Name $JobName -ScriptBlock {   
+        Start-Job -Name $JobName -ScriptBlock {
             param ($PassedArgs)
+            $data = New-Object System.Collections.ArrayList
+            Search-UnifiedAuditLog @PassedArgs -outvariable +data
+            #Write-Host $data
             do {
                 #$AuditData += SearchUnifiedAuditLog -CurrentStart $CurrentStart -CurrentEnd $CurrentEnd
-                Search-UnifiedAuditLog @PassedArgs
-            } while ( $AuditData.Count % 5000 -eq 0 )
+                Search-UnifiedAuditLog @PassedArgs -outvariable +data
+            } while ( $data.Count % 5000 -eq 0 )
         } -InitializationScript {
             Import-Module .\Connect-Exchange.ps1 ;
             Connect-Exchange 'svcexchlogcollector@veeam.com' 'LuB&BN0GIrWV' ;
             #Connect-Exchange 'yuriy.samorodov@veeam.com' 'K@znachey' ;
             #Import-Module .\Search-O365UnifiedAuditLogs.ps1 ;
-        } -ArgumentList $SearchUnifiedAuditLogParameters
-        Write-Host $JobName
+        } -ArgumentList $SearchUnifiedAuditLogParameters,$data
+        #Write-Host $JobName
         #Write-Output $Jobs
         Get-PSSession | Remove-PSSession
         $i = $i + $interval
         $CurrentStart = $CurrentEnd
     }
+    $scriptEnd = Get-Date
+
     if ($jobs.Count -eq 12) {
         $jobs | Wait-Job | Out-Null
         $JobGroups = $jobs | Group-Object Name
