@@ -40,7 +40,8 @@ do  {
             do {
                 #$AuditData += SearchUnifiedAuditLog -CurrentStart $CurrentStart -CurrentEnd $CurrentEnd
                 Search-UnifiedAuditLog @PassedArgs -outvariable +data
-            } while ( $data.Count % 5000 -eq 0 )
+                $localResults = Get-Job | Receive-Job -Keep
+            } while ( $localResults[-1].ResultIndex -ne $localResults[-1].ResultCount )
         } -InitializationScript {
             Import-Module .\Connect-Exchange.ps1 ;
             Connect-Exchange 'svcexchlogcollector@veeam.com' 'LuB&BN0GIrWV' ;
