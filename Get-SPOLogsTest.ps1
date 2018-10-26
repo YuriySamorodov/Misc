@@ -1,45 +1,53 @@
-
-
+Get-Job | Remove-Job
 $currentStart  = $null
 $currentEnd = $null
 $interval = 15
 $ResultSize = 5000
+
 $LogPath = 'C:\Users\yury.samorodov\Downloads\SPOLogs'
 $StartDate = Get-Date
 $StartDate = $StartDate.Date.AddHours(-48)
 $EndDate = $StartDate.AddHours(24)
 $ConnectionURI = "https://ps.outlook.com/powershell-LiveID/?proxymethod=RPS"
 
-$jobs = @()
 do  {
     #Date Managemment
     if ($CurrentStart -eq $null) {
-                $CurrentStart = $StartDate
-            } else {
-                $CurrentStart = $CurrentStart.AddHours(1)    
-            }
-    $CurrentEnd = $CurrentStart.AddMinutes($interval)
+            $CurrentStart = $StartDate
+        }
     
     #Getting log data in an hour timespan using 15 minutes chunks
     for ($i = 0 ; $i -lt 60) {
+        $AuditData = New-Object System.Collections.ArrayList
+        $SessionId = New-Guid
+        $CurrentEnd = $CurrentStart.AddMinutes($interval)
         $JobName = "SPOLogs_$($CurrentStart.ToString("yyyyMMddHHmm"))"
+        $SearchUnifiedAuditLogParameters = @{
+            SessionId = $SessionId
+            StartDate = $CurrentStart
+            EndDate = $CurrentEnd
+            SessionCommand = 'ReturnLargeSet'
+            FreeText = "sharepoint\.com"
+            ResultSize = $ResultSize
+            OutVariable = '+AuditData'
+        }
         $jobs += Start-Job -Name $JobName -ScriptBlock {   
-            param (
-                $CurrentStart,
-                $ResultSize
-            )
+            param ($PassedArgs)
             do {
-                $AuditData += SearchUnifiedAuditLog
+                #$AuditData += SearchUnifiedAuditLog -CurrentStart $CurrentStart -CurrentEnd $CurrentEnd
+                Search-UnifiedAuditLog @PassedArgs
             } while ( $AuditData.Count % 5000 -eq 0 )
         } -InitializationScript {
             Import-Module .\Connect-Exchange.ps1 ;
-            Connect-Exchange 'yuriy.samorodov@veeam.com' 'K@znachey' ;
-            Import-Module .\Search-O365UnifiedAuditLogs.ps1 ;
-        } -ArgumentList $СurrentStart,$ResultSize
+            Connect-Exchange 'svcexchlogcollector@veeam.com' 'LuB&BN0GIrWV' ;
+            #Connect-Exchange 'yuriy.samorodov@veeam.com' 'K@znachey' ;
+            #Import-Module .\Search-O365UnifiedAuditLogs.ps1 ;
+        } -ArgumentList $SearchUnifiedAuditLogParameters
         Write-Host $JobName
         #Write-Output $Jobs
         Get-PSSession | Remove-PSSession
         $i = $i + $interval
+        $CurrentStart = $CurrentEnd
     }
     if ($jobs.Count -eq 12) {
         $jobs | Wait-Job | Out-Null
@@ -52,8 +60,9 @@ do  {
             $results = $results | ConvertFrom-Json
             $results | export-csv -NoTypeInformation "$($LogPath)\$($JobName).log" -Append
         }
-        $jobs | Remove-Job
+        Get-Job | Remove-Job
         Start-Sleep -Seconds 60
+        $Jobs = @()
     }
 } while ( 
     $currentStart -le $EndDate
