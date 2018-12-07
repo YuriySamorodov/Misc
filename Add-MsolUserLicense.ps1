@@ -26,7 +26,7 @@ function Add-MsolUserLicense {
                 $DisabledPlans = $DisabledPlans | Where-Object { $_.ServicePlan.ServiceName -notmatch $LicenseName }
                 $DisabledPlans = ( $DisabledPlans ).ServicePlan.ServiceName
                 $LO = New-MsolLicenseOptions -AccountSkuId $Licenses[$l].AccountSkuId -DisabledPlans $DisabledPlans
-                $LogProperties = @{
+                $LogProperties = [ordered]@{
                     'Username' = $users[$i].UserPrincipalName
                     'AccountSku' = $Licenses[$l].AccountSkuId
                     'DisabledPlans' = $DisabledPlans -join ","
