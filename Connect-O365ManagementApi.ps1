@@ -10,3 +10,6 @@ $resource = "https://manage.office.com"
 $body = @{grant_type="client_credentials";resource=$resource;client_id=$ClientID;client_secret=$ClientSecret}
 $oauth = Invoke-RestMethod -Method Post -Uri $loginURL/$tenantdomain/oauth2/token?api-version=1.0 -Body $body
 $headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
+
+
+$contentBlobs = $null ; do { Invoke-WebRequest -Method GET -Headers $headerParams "https://manage.office.com/api/v1.0/$tenantGUID/activity/feed/subscriptions/content?contentType=Audit.Sharepoint&PublisherIdentifier=$tenantGUID" ; foreach ( $blobPackage in $rawBlob ) { $contentBlobs += $blobPackage.Content | ConvertFrom-Json } } while ( $rawBlob.Headers.NextPageUri )

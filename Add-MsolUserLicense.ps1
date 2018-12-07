@@ -1,29 +1,40 @@
-$cred = Get-Credential
-Connect-MsolService -Credential $cred
-
 function Add-MsolUserLicense {
-
+ 
     param (
+        [object[]]$Identity,
         [string[]]$GroupName,
-        [string[]]$Licenses = 'Stream'
+        [string[]]$LicenseName = 'Stream',
+        [string[]]$LogName = 'Stream'
     )
-
+ 
     if ($Licenses.Count -gt 1){
         $Licenses = $Licenses -join "|"
     }
+ 
+    
 
     for ($g = 0 ; $g -lt $GroupName.Count ; $g++ ) {
         $group = Get-MsolGroup -SearchString $GroupName[$g]
-        $users = Get-MsolGroupMember -GroupObjectId $group.ObjectId -All
-        $users = $users | Get-MsolUser
-
+        [array]$users = Get-MsolGroupMember -GroupObjectId $group.ObjectId -All
+        [array]$users = $users | Get-MsolUser
+ 
         for ( $i = 0 ; $i -lt $users.Count ; $i++  ) {
-            $License = $users[$i].Licenses
-            $Plans = $License | Select-Object -ExpandProperty ServiceStatus
-            $DisabledPlans = $Plans | Where-Object { $_.ServicePlan.ServiceName -notmatch $Licenses -and $_.ProvisioningStatus -eq 'Disabled' } 
-            $DisabledPlans = ( $DisabledPlans ).ServicePlan.ServiceName
-            $LO = New-MsolLicenseOptions -AccountSkuId $License.AccountSkuId -DisabledPlans $DisabledPlans
-            Set-MsolUserLicense -UserPrincipalName $users[$i].UserPrincipalName -LicenseOptions $LO
+            [array]$Licenses = $users[$i].Licenses
+            for ( $l = 0 ; $l -lt $Licenses.Count ; $l++ ) {
+                $Plans = $Licenses[$l].ServiceStatus
+                $DisabledPlans = $Plans | Where-Object { $_.ProvisioningStatus -eq 'Disabled' } 
+                $DisabledPlans = $DisabledPlans | Where-Object { $_.ServicePlan.ServiceName -notmatch $LicenseName }
+                $DisabledPlans = ( $DisabledPlans ).ServicePlan.ServiceName
+                $LO = New-MsolLicenseOptions -AccountSkuId $Licenses[$l].AccountSkuId -DisabledPlans $DisabledPlans
+                $LogProperties = @{
+                    'Username' = $users[$i].UserPrincipalName
+                    'AccountSku' = $Licenses[$l].AccountSkuId
+                    'DisabledPlans' = $DisabledPlans -join ","
+                }
+                $Log = New-Object -TypeName PSObject -Property @LogProperties
+                $Log | export-csv -NoTypeInformation TeamsEnablement.csv -Append
+                Set-MsolUserLicense -UserPrincipalName $users[$i].UserPrincipalName -LicenseOptions $LO
+            }
         }
     }
 }
