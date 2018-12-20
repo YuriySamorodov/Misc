@@ -10,14 +10,14 @@ function Start-O365UnifiedAuditLogSearch {
 
     $LogPath = "C:\Users\yury.samorodov\Downloads\SPOLogs"
     $StartDate = Get-Date
-    $StartDate = $StartDate.Date.AddHours(-96)
+    $StartDate = $StartDate.Date.AddHours(-120)
     $EndDate = $StartDate.AddHours(24)
     $ConnectionURI = "https://ps.outlook.com/powershell-LiveID/?proxymethod=RPS"
 
 
 
     do  {
-        #Date Managemment
+        #Date ManagemmentX
         if ($CurrentStart -eq $null) {
                 $CurrentStart = $StartDate
             }
@@ -55,12 +55,12 @@ function Start-O365UnifiedAuditLogSearch {
                         } catch {
                             #$data = New-Object System.Collections.ArrayList
                             Get-PSSession | Remove-PSSession
-                            #Connect-Exchange 'svcexchlogcollector@veeam.com' 'LuB&BN0GIrWV'
-                            Connect-Exchange 'yuriy.samorodov@veeam.com' 'K@znachey'
+                            Connect-Exchange 'svcexchlogcollector@veeam.com' 'LuB&BN0GIrWV'
+                            #Connect-Exchange 'yuriy.samorodov@veeam.com' 'K@znachey'
                         } finally {
                             $data = New-Object System.Collections.ArrayList
                             Search-UnifiedAuditLog @PassedArgs #-outvariable +data
-                            Start-Sleep -Milliseconds 500
+                            # Start-Sleep -Milliseconds 500
                             #$lastIndex = $data[-1].ResultIndex
                             #$data = $data | Sort-Object ResultIndex
                         }
@@ -73,21 +73,40 @@ function Start-O365UnifiedAuditLogSearch {
                 Get-PSSession | Remove-PSSession
                 $i = $i + $interval
                 $CurrentStart = $CurrentEnd
+            } elseif ( ( $CompletedJobs = Get-Job -State Completed ).Count -ge 1 ) {
+                Write-Output "Exporting data for $( $CompletedJobs.Count ) jobs"
+                foreach ($item in $CompletedJobs ){
+                    $results = $item | Receive-Job
+                    $results = $results | Select-Object -ExpandProperty AuditData
+                    $results = $results | ConvertFrom-Json
+                    $results = [Linq.Enumerable]::Distinct([array[]]$results)
+                    $results.SyncRoot | export-csv -NoTypeInformation "$($LogPath)\$($item.name).log" -Append -Force
+                    $completedJobs | Remove-Job -ea:0
+                    Start-Sleep -Milliseconds 500
+                    }
+                     continue
             } else {
-                $completedJobs = $null
-                $completedJobs = Get-Job -State Completed
-                $results = $completedJobs | Receive-Job
-                $results = $results | Select-Object -ExpandProperty AuditData
-                $results = $results | ConvertFrom-Json
-                $results | export-csv -NoTypeInformation "$($LogPath)\$($JobName).log" -Append
-                $completedJobs | Remove-Job -ea:0
-                Start-Sleep -Milliseconds 500
+                # Write-Output "Nothing to export. Moving on..."
                 continue
             }
         }
 
+        $lastJobs = Get-Job | Where-Object { $_.State -ne 'Running'} 
+
+        if ( $lastJobs.Count -gt 0 ) {
+            foreach ( $item in $lastJobs ) {
+                $result = $item | Receive-Job
+                $result = $result | Select-Object -ExpandProperty AuditData
+                $result = $result | ConvertFrom-Json
+                $result = [Linq.Enumerable]::Distinct([array[]]$results)
+                $result | export-csv -NoTypeInformation "$($LogPath)\$($item.Name).log" -Append -Force
+                $lastJobs | Remove-Job -ea:0
+                Start-Sleep -Milliseconds 500
+            }
+        }
+
         $scriptEnd = Get-Date
-        Write-Output "Exporting events for $Jobname completed"
+        Write-Output "Creating $Jobname job completed"
 
 
         #$jobs = Get-Job

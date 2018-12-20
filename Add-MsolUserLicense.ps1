@@ -18,7 +18,7 @@ function Add-MsolUserLicense {
         [array]$users = Get-MsolGroupMember -GroupObjectId $group.ObjectId -All
         [array]$users = $users | Get-MsolUser
  
-        for ( $i = 0 ; $i -lt $users.Count ; $i++  ) {
+        for ( $i = 0 ; $i -lt 1 ; $i++  ) {
             [array]$Licenses = $users[$i].Licenses
             for ( $l = 0 ; $l -lt $Licenses.Count ; $l++ ) {
                 $Plans = $Licenses[$l].ServiceStatus
@@ -31,8 +31,8 @@ function Add-MsolUserLicense {
                     'AccountSku' = $Licenses[$l].AccountSkuId
                     'DisabledPlans' = $DisabledPlans -join ","
                 }
-                $Log = New-Object -TypeName PSObject -Property @LogProperties
-                $Log | export-csv -NoTypeInformation TeamsEnablement.csv -Append
+                $Log = New-Object -TypeName PSObject -Property $LogProperties
+                $Log | export-csv -NoTypeInformation ~\Downloads\TeamsEnablement.csv -Append
                 Set-MsolUserLicense -UserPrincipalName $users[$i].UserPrincipalName -LicenseOptions $LO
             }
         }
