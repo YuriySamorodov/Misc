@@ -1,4 +1,4 @@
-function Add-MsolUserLicense {
+function Add-MsolUserLicensePlan {
  
     param (
         [Parameter(Mandatory=$true,Position=0,ValueFromPipelineByPropertyName=$true,ValueFromPipeline=$true)]
