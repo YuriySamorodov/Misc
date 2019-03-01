@@ -13,9 +13,9 @@ function Add-MsolUserLicensePlan {
     $user = Get-MsolUser -SearchString $UserPrincipalName
     [array]$Licenses = $user.Licenses
     for ( $i = 0 ; $i -lt $Licenses.Count ; $i++ ) {
-        $Plans = $Licenses[$i].ServiceStatus
-        $DisabledPlans = $Plans | Where-Object { $_.ProvisioningStatus -eq 'Disabled' } 
-        $DisabledPlans = $DisabledPlans | Where-Object { $_.ServicePlan.ServiceName -notmatch $LicenseName }
+        [array]$Plans = $Licenses[$i].ServiceStatus
+        [array]$DisabledPlans = $Plans | Where-Object { $_.ProvisioningStatus -eq 'Disabled' } 
+        [array]$DisabledPlans = $DisabledPlans | Where-Object { $_.ServicePlan.ServiceName -notmatch $LicenseName }
         $DisabledPlans = ( $DisabledPlans ).ServicePlan.ServiceName
         $EnabledPlansBeforeChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled'}
         $EnabledPlansBeforeChange = $EnabledPlansBeforeChange.ServicePlan.ServiceName
