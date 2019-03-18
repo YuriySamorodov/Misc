@@ -20,7 +20,7 @@ function Remove-MsolUserLicensePlan {
         $DisabledPlans = ( $DisabledPlans ).ServicePlan.ServiceName
         $EnabledPlansBeforeChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled'}
         $EnabledPlansBeforeChange = $EnabledPlansBeforeChange.ServicePlan.ServiceName
-        $EnabledPlansAfterChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled' -or $_.ServicePlan.ServiceName -match $LicenseName }
+        $EnabledPlansAfterChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled' -or $_.ServicePlan.ServiceName -notmatch $LicenseName }
         $EnabledPlansAfterChange = $EnabledPlansAfterChange.ServicePlan.ServiceName
         if ( $EnabledPlansAfterChange.Count -ne $EnabledPlansBeforeChange.Count ) {
             $LicensesChange = $true

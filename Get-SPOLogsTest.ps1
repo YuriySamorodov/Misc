@@ -10,7 +10,7 @@ function Start-O365UnifiedAuditLogSearch {
 
     $LogPath = "C:\Users\yury.samorodov\Downloads\SPOLogs"
     $StartDate = Get-Date
-    $StartDate = $StartDate.Date.AddHours(-120)
+    $StartDate = $StartDate.Date.AddHours(-72)
     $EndDate = $StartDate.AddHours(24)
     $ConnectionURI = "https://ps.outlook.com/powershell-LiveID/?proxymethod=RPS"
 
@@ -146,7 +146,9 @@ function Start-O365UnifiedAuditLogSearch {
  #>
         #Get-Job | Remove-Job
  
-    } while ( 
+    } 
+    
+    while ( 
         $currentStart -le $EndDate
     )
 
