@@ -14,7 +14,7 @@ Start-Transcript -LiteralPath $DebugFilePath -IncludeInvocationHeader -Force -Ap
 
 
 #Authentication
-$UserName = 'yuriy.samorodov@veeam.com'
+$UserName = ''
 $Password = ''
 $Password = ConvertTo-SecureString -String $Password -AsPlainText -Force
 $creds = [pscredential]::new($UserName,$Password)
