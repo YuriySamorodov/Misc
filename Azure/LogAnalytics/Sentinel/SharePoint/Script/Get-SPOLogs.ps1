@@ -15,7 +15,7 @@ Start-Transcript -LiteralPath $DebugFilePath -IncludeInvocationHeader -Force -Ap
 
 #Authentication
 $UserName = 'yuriy.samorodov@veeam.com'
-$Password = 'K0nstantin'
+$Password = ''
 $Password = ConvertTo-SecureString -String $Password -AsPlainText -Force
 $creds = [pscredential]::new($UserName,$Password)
 $TenantId = 'ba07baab-431b-49ed-add7-cbc3542f5140'
@@ -33,7 +33,7 @@ $LogFilePath = Join-Path -Path $LogFolder -ChildPath $LogFileName
 
 
 $QueryFolder = "C:\Users\yury.samorodov\Downloads\Azure\LogAnalytics\Sentinel\SharePoint\Script\"
-$QueryName = 'query.kql'
+$QueryName = 'query2.kql'
 $QueryPath = Join-Path -Path $QueryFolder -ChildPath $QueryName
 $Query = Get-Content $QueryPath
 

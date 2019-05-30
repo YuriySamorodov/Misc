@@ -2,5 +2,5 @@ let TimeSpan = totimespan(24h);
 let StartDateTime = startofday(now(-TimeSpan)); 
 OfficeActivity 
 | where OfficeWorkload == 'SharePoint' 
-| where where OfficeObjectId contains "190508"
+| where OfficeObjectId contains "190508"
 | sort by TimeGenerated asc
