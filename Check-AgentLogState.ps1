@@ -3,7 +3,7 @@ $itemCount = '0'
 $servers = get-transportservice ;
 $servers = $servers | Where-Object { $_.Name -notmatch "edge" }
 
-$logState = foreach ( $s in $servers ) { 
+foreach ( $s in $servers ) { 
     $logUNCPath = "\\$($s.Name)\$($s.AgentLogPath -replace "H:","H$")"
     $obj = New-Object psobject ; 
     $obj | Add-Member -MemberType ScriptProperty -Name "Server" -Value { $s.Name } ; 
