@@ -57,12 +57,15 @@ do  {
         $i = $i + $interval
     }
     if ($jobs.Count -eq 12) {
+        $JobsGroups = $jobs | group Name | select -ExpandProperty Name
+        foreach ( 
+            $gr
+        )
         $jobs | Wait-Job | Out-Null
-        $results = $jobs | Receive-Job
         $jobs | Remove-Job
         $results = $results | Select-Object -ExpandProperty AuditData
         $results = $results | ConvertFrom-Json
-        $results | export-csv -NoTypeInformation "$($JobName).log"
+        $results | export-csv -NoTypeInformation "$($JobName).log" -Append
         Start-Sleep -Seconds 60
     }
 } while ( 
