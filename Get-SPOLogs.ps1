@@ -1,8 +1,8 @@
 $start = Get-Date
 
 $resultSize = 5000
-[datetime]$startDate = '07/23/2018 11:45:00'
-[datetime]$endDate = '07/24/2018 00:00:00'
+[datetime]$startDate = '08/23/2018 23:45:00'
+[datetime]$endDate = '08/26/2018 00:00:00'
 $currentStart = $null
 $CurrentEnd = $null
 $Interval = 15
@@ -43,12 +43,13 @@ do{
         }
         while ( $auditData.Count % $resultSize -eq 0 ) 
     $results += $auditData
-    if ($CurrentEnd.TimeOfDay.TotalHours -match "^0$|^12$") {
-        $SPOLogs = $results | where { $_.recordType -match "SharePoint" }
+    #Export log details each hour
+    if ($CurrentEnd.TimeOfDay.TotalMinutes % 60 -eq 0 ) {
+        $SPOLogs = $results | where { $_.recordType -match "OneDrive|SharePoint" }
         $SPOLogs = $SPOLogs | Select-Object -ExpandProperty AuditData
         $SPOLogs = $SPOLogs | ConvertFrom-Json
-        $LogName = "$($currentEnd.ToString("yyyyMMddHHmm"))-SharepointOnlineLogs.log"
-        $SPOLogs | export-csv -NoTypeInformation $LogName
+        $LogName = "$($CurrentEnd.ToString("yyyyMMddHHmm"))-SharepointOnlineLogs.log"
+        $SPOLogs | export-csv $LogName -NoTypeInformation -Append
         $results = $null
         $SPOLogs = $null
     }
