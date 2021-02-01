@@ -67,17 +67,17 @@ function New-SPOnlineSite {
         )
 
         $Params = [ordered]@{
-            Credential = $Credential
+            #Credential = $Credential
             TenantAdminUrl = $AdminUrl
-            #Thumbprint = '3bc79c67f5d68abbdae90760c57d4e8cd3b2ea12'
-            ReturnConnection = $true
-            #ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
-            #Tenant = 'ba07baab-431b-49ed-add7-cbc3542f5140'
+            Thumbprint = '3bc79c67f5d68abbdae90760c57d4e8cd3b2ea12'
+            #eturnConnection = $true
+            ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
+            Tenant = 'ba07baab-431b-49ed-add7-cbc3542f5140'
         }
         Connect-PnPOnline @PSBoundParameters @Params
     }
 
-    Connect-PnPSite -Url $AdminUrl | Out-Null
+    Connect-PnPSite -Url $AdminUrl
     $PnPConnection = Get-PnPConnection
 
 
@@ -99,13 +99,20 @@ function New-SPOnlineSite {
     #Comment before pushing to production
     $site = Get-PnPTenantSite $PnPTenantSite.Url
     Write-Information "`n$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) has been created"
-
     #Break if site has not been created
     if ( -not $site ) {
         Break 
     }
 
-    
+    #Set theme
+    $theme = Get-PnPTenantTheme
+    Set-PnPWebTheme -Theme $theme -WebUrl $site.Url 
+    Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) theme has been changed"
+
+    Disconnect-PnPOnline
+    Connect-PnPSite -Url $Site.Url
+    $PnPConnection = Get-PnPConnection
+
     $SetPnPSite = @{
         #Connection = $PnPConnection
         Identity = $Site.Url
@@ -125,17 +132,13 @@ function New-SPOnlineSite {
     Set-PnPSite @SetPnPSite
     Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) has been updated"
 
-    #Set theme
-    $theme = Get-PnPTenantTheme
-    Set-PnPWebTheme -Theme $theme -WebUrl $site.Url 
-    Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) theme has been changed"
-
     #Versionning settings
     $LibrarySettings = @{
         Identity = "Documents"
         EnableVersioning = $true
         MinorVersions = 0
         MajorVersions = 20
+
     }
     Set-PnPList @LibrarySettings | Out-Null
     Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) Versioning have been limited for Documents"

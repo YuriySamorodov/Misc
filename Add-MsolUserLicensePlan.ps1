@@ -50,5 +50,6 @@ function Add-MsolUserLicensePlan {
             $Log = New-Object -TypeName PSObject -Property $LogProperties
             $Log | export-csv -NoTypeInformation $LogPath -Append -Force
             Set-MsolUserLicense -UserPrincipalName $user.UserPrincipalName -LicenseOptions $LO
+        }
     }
 }
