@@ -67,17 +67,17 @@ function New-SPOnlineSite {
         )
 
         $Params = [ordered]@{
-            Credential = $Credential
+            #Credential = $Credential
             TenantAdminUrl = $AdminUrl
-            #Thumbprint = '3bc79c67f5d68abbdae90760c57d4e8cd3b2ea12'
-            ReturnConnection = $true
-            #ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
-            #Tenant = 'ba07baab-431b-49ed-add7-cbc3542f5140'
+            Thumbprint = '3bc79c67f5d68abbdae90760c57d4e8cd3b2ea12'
+            #eturnConnection = $true
+            ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
+            Tenant = 'ba07baab-431b-49ed-add7-cbc3542f5140'
         }
         Connect-PnPOnline @PSBoundParameters @Params
     }
 
-    Connect-PnPSite -Url $AdminUrl | Out-Null
+    Connect-PnPSite -Url $AdminUrl
     $PnPConnection = Get-PnPConnection
 
 
@@ -99,13 +99,20 @@ function New-SPOnlineSite {
     #Comment before pushing to production
     $site = Get-PnPTenantSite $PnPTenantSite.Url
     Write-Information "`n$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) has been created"
-
     #Break if site has not been created
     if ( -not $site ) {
         Break 
     }
 
-    
+    #Set theme
+    $theme = Get-PnPTenantTheme
+    Set-PnPWebTheme -Theme $theme -WebUrl $site.Url 
+    Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) theme has been changed"
+
+    Disconnect-PnPOnline
+    Connect-PnPSite -Url $Site.Url
+    $PnPConnection = Get-PnPConnection
+
     $SetPnPSite = @{
         #Connection = $PnPConnection
         Identity = $Site.Url
@@ -124,11 +131,6 @@ function New-SPOnlineSite {
     }
     Set-PnPSite @SetPnPSite
     Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) has been updated"
-
-    #Set theme
-    $theme = Get-PnPTenantTheme
-    Set-PnPWebTheme -Theme $theme -WebUrl $site.Url 
-    Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) theme has been changed"
 
     #Versionning settings
     $LibrarySettings = @{
@@ -323,6 +325,7 @@ function New-SPOnlineSite {
     Add-PnPUserToGroup -LoginName "c:0t.c|tenant|$($Group.ObjectId)" -Identity "$($site.Title) Designers" | Out-Null
 
 
+
     function AddSPOSiteGroupMember {
         param (
             [string]$Identity,
@@ -361,6 +364,39 @@ function New-SPOnlineSite {
     }
 
     
+    #Microsoft Graph Way to get groups
+    # $MgGraphProps = @{
+    #     CertificateThumbprint = '3BC79C67F5D68ABBDAE90760C57D4E8CD3B2EA12'
+    #     ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
+    #     TenantId = 'ba07baab-431b-49ed-add7-cbc3542f5140'
+    # }
+    # Connect-MgGraph @MgGraphProps
+    # $group = Get-MgGroup -Filter "StartsWith(DisplayName,'Veeam.TeamVeeamCom')"
+
+    # function AddSPOSiteGroupMember {
+    #     param (
+    #         [string]$Identity,
+    #         [string]$Group
+    #     )
+        
+    #     switch -Regex ($Identity) {
+    #         '\w+@w+$' {  $IdProperty ='mail' }
+    #         "\s" {  $IdProperty ='DisplayName' }
+    #         "w+\.w+$" {  $IdProperty ='mail' }
+    #     }
+
+    #     $LoginName = Get-MgUser -Filter "$IdProperty eq '$Identity'"
+    #     if ( $null -ne $LoginName ) {
+    #         $LoginName = $LoginName.UserPrincipalName
+    #     } else {
+    #         $LoginName = Get-MgGroup -Filter "$IdProperty eq '$Identity'"
+    #         $LoginName = "c:0t.c|tenant|$($LoginName.Id)"
+    #     }
+    #     $Group = "$SiteTitle $Group"
+    #     #Add-PnPUserToGroup -LoginName $LoginName -Identity $Group | Out-Null
+    #     Write-Output $LoginName
+    # }
+
 
 
     Disconnect-PnPOnline

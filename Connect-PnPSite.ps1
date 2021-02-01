@@ -1,3 +1,5 @@
+$AdminUrl = 'https://veeamsoftwarecorp-admin.sharepoint.com'
+
 function Connect-PnPSite {
     [CmdletBinding()]
     param (
