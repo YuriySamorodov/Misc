@@ -397,7 +397,7 @@ function New-SPOnlineSite {
     #     Write-Output $LoginName
     # }
 
-Test-Path
+
 
     Disconnect-PnPOnline
 
