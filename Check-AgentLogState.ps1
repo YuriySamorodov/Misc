@@ -3,13 +3,13 @@ $itemCount = '0'
 $servers = get-transportservice ;
 $servers = $servers | Where-Object { $_.Name -notmatch "edge" }
 
-foreach ( $s in $servers ) { 
-    $logUNCPath = "\\$($s.Name)\$($s.AgentLogPath -replace "H:","H$")"
+function Check-AgentLog ($server) { 
+    $logUNCPath = "\\$($server.Name)\$($server.AgentLogPath -replace "H:","H$")"
     $obj = New-Object psobject ; 
-    $obj | Add-Member -MemberType ScriptProperty -Name "Server" -Value { $s.Name } ; 
-    #$obj | Add-Member -MemberType ScriptProperty -Name "LocalLogPath" -Value { $s.AgentLogPath } ; 
+    $obj | Add-Member -MemberType ScriptProperty -Name "Server" -Value { $server.Name } ; 
+    #$obj | Add-Member -MemberType ScriptProperty -Name "LocalLogPath" -Value { $server.AgentLogPath } ; 
     $obj | Add-Member -MemberType ScriptProperty -Name "UNCLogPath" -Value { $logUNCPath } ; 
-    $obj | Add-Member -MemberType ScriptProperty -Name "AgentLogEnabled" -Value { $s.AgentLogEnabled } ; 
+    $obj | Add-Member -MemberType ScriptProperty -Name "AgentLogEnabled" -Value { $server.AgentLogEnabled } ; 
     if ( ( Test-Path $logUNCPath ) -eq $false  ) { 
         $itemCount = '0'
         $logUNCPathExists = 'False'

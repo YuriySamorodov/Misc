@@ -3,7 +3,8 @@ function Add-MsolUserLicensePlan {
     param (
         [Parameter(Mandatory=$true,Position=0,ValueFromPipelineByPropertyName=$true,ValueFromPipeline=$true)]
         [string]$UserPrincipalName,
-        [string[]]$LicenseName = '',
+        [string[]]$ServiceName = '',
+        [string]LicenseName = 'EnterprisePack',
         [string]$LogPath = ''
     )
     
@@ -12,7 +13,7 @@ function Add-MsolUserLicensePlan {
     }
     $user = Get-MsolUser -SearchString $UserPrincipalName
     [array]$Licenses = $user.Licenses
-    [array]$Licenses = $Licenses | where { $_.AccountSkuId -match "Enterprise"}
+    [array]$Licenses = $Licenses | Where-Object { $_.AccountSkuId -match $LicenseName}
     if ($user.IsLicensed -ne $true ) {
         [array]$Plans = Get-MsolAccountSku
         [array]$Plans = $Plans.ServiceStatus
@@ -20,30 +21,18 @@ function Add-MsolUserLicensePlan {
         [array]$Plans = $Plans.ServiceName
         [array]$DisabledPlans = $Plans
         $EnabledPlansBeforeChange = 'None'
-        $EnabledPlansAfterChange = $Plans | Where-Object { $_.ServicePlan.ServiceName -match $LicenseName }
+        $EnabledPlansAfterChange = $Plans | Where-Object { $_.ServicePlan.ServiceName -match $ServiceName }
         $EnabledPlansAfterChange = $EnabledPlansAfterChange.ServicePlan.ServiceName
 
     } else {
         for ( $i = 0 ; $i -lt $Licenses.Count ; $i++ ) {
-            #AssignmentCheck. Required due to some licenses assigned via groups
-            $ErrorActionPreference = 'Stop'
-            $licenseGroup =  $Licenses[$i].GroupsAssigningLicense
-            if ( $licenseGroup -ne $null) {
-                try {
-                    # May break here some time in the future
-                    Get-MsolGroup -ObjectId $licenseGroup ;
-                    continue
-                } 
-                catch {
-                }
-            }
             [array]$Plans = $Licenses[$i].ServiceStatus
-            [array]$DisabledPlans = $Plans | Where-Object { $_.ProvisioningStatus -eq 'Disabled' -and $_.ServicePlan.ServiceName -notmatch $LicenseName } 
+            [array]$DisabledPlans = $Plans | Where-Object { $_.ProvisioningStatus -eq 'Disabled' -and $_.ServicePlan.ServiceName -notmatch $ServiceName } 
             # [array]$DisabledPlans = $DisabledPlans | Where-Object { $_.ServicePlan.ServiceName -notmatch $LicenseName }
             $DisabledPlans = ( $DisabledPlans ).ServicePlan.ServiceName
             $EnabledPlansBeforeChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled'}
             $EnabledPlansBeforeChange = $EnabledPlansBeforeChange.ServicePlan.ServiceName
-            $EnabledPlansAfterChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled' -or $_.ServicePlan.ServiceName -match $LicenseName }
+            $EnabledPlansAfterChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled' -or $_.ServicePlan.ServiceName -match $ServiceName }
             $EnabledPlansAfterChange = $EnabledPlansAfterChange.ServicePlan.ServiceName
             if ( $EnabledPlansAfterChange.Count -ne $EnabledPlansBeforeChange.Count ) {
                 $LicensesChange = $true

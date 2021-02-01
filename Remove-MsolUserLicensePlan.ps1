@@ -3,7 +3,8 @@ function Remove-MsolUserLicensePlan {
     param (
         [Parameter(Mandatory=$true,Position=0,ValueFromPipelineByPropertyName=$true,ValueFromPipeline=$true)]
         [string]$UserPrincipalName,
-        [string[]]$LicenseName = '',
+        [Parameter(Mandatory=$true,Position=1)]
+        [string[]]$LicenseName,
         [string]$LogPath = ''
     )
  
@@ -12,7 +13,22 @@ function Remove-MsolUserLicensePlan {
     }
     $user = Get-MsolUser -SearchString $UserPrincipalName
     [array]$Licenses = $user.Licenses
+    $Licenses = $licenses | Where-Object { $_.AccountSkuId -match "ENTERPRISEPACK"}
     for ( $i = 0 ; $i -lt $Licenses.Count ; $i++ ) {
+        <#AssignmentCheck. Required due to some licenses assigned via groups
+        $ErrorActionPreference = 'Stop'
+        $licenseGroup =  $Licenses[$i].GroupsAssigningLicense
+        if ( $licenseGroup -ne $null) {
+            try {
+                # May break here some time in the future
+                Get-MsolGroup -ObjectId $licenseGroup ;
+                continue
+            } 
+            catch {
+            }
+        }
+        #>
+        $ErrorActionPreference = 'SilentlyContinue'
         $Plans = $Licenses[$i].ServiceStatus
         [array]$PlanToDisable = $Plans | Where-Object { $_.ServicePlan.ServiceName -match $LicenseName }
         [array]$DisabledPlans = $Plans | Where-Object { $_.ProvisioningStatus -eq 'Disabled' } 
@@ -20,7 +36,7 @@ function Remove-MsolUserLicensePlan {
         $DisabledPlans = ( $DisabledPlans ).ServicePlan.ServiceName
         $EnabledPlansBeforeChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled'}
         $EnabledPlansBeforeChange = $EnabledPlansBeforeChange.ServicePlan.ServiceName
-        $EnabledPlansAfterChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled' -or $_.ServicePlan.ServiceName -notmatch $LicenseName }
+        $EnabledPlansAfterChange = $Plans | Where-Object { $_.ProvisioningStatus -ne 'Disabled' -and  $_.ServicePlan.ServiceName -notmatch $LicenseName }
         $EnabledPlansAfterChange = $EnabledPlansAfterChange.ServicePlan.ServiceName
         if ( $EnabledPlansAfterChange.Count -ne $EnabledPlansBeforeChange.Count ) {
             $LicensesChange = $true
@@ -40,5 +56,6 @@ function Remove-MsolUserLicensePlan {
         $Log = New-Object -TypeName PSObject -Property $LogProperties
         $Log | export-csv -NoTypeInformation $LogPath -Append -Force
         Set-MsolUserLicense -UserPrincipalName $user.UserPrincipalName -LicenseOptions $LO
+        Write-Host "$($LogProperties.Date) - $($LogProperties.Username) - $($LogProperties.LicensesChange)"
     }
 }
