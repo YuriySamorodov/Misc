@@ -318,29 +318,65 @@ function New-SPOnlineSite {
     }
 
 
-    #Add Users to groups
-    Connect-AzureAD -Credential $global:credential | out-Null
-    #Add Veeam.TeamVeeamCon to Designers group
-    $Group = Get-AzureADGroup -SearchString "Veeam.TeamVeeamCom"
-    Add-PnPUserToGroup -LoginName "c:0t.c|tenant|$($Group.ObjectId)" -Identity "$($site.Title) Designers" | Out-Null
+    # #Add Users to groups
+    # Connect-AzureAD -Credential $global:credential | out-Null
+    # #Add Veeam.TeamVeeamCon to Designers group
+    # $Group = Get-AzureADGroup -SearchString "Veeam.TeamVeeamCom"
+    # Add-PnPUserToGroup -LoginName "c:0t.c|tenant|$($Group.ObjectId)" -Identity "$($site.Title) Designers" | Out-Null
 
+    # function AddSPOSiteGroupMember {
+    #     param (
+    #         [string]$Identity,
+    #         [string]$Group
+    #     )
+    #     $LoginName = Get-AzureADUser -SearchString $Identity
+    #     if ( $null -ne $LoginName ) {
+    #         $LoginName = $LoginName.UserPrincipalName
+    #     } else {
+    #         $LoginName = Get-AzureADGroup -SearchString $Identity
+    #         $LoginName = "c:0t.c|tenant|$($LoginName.ObjectId)"
+    #     }
+    #     $Group = "$SiteTitle $Group"
+    #     Add-PnPUserToGroup -LoginName $LoginName -Identity $Group | Out-Null
+    # }
 
+    #Microsoft Graph Way to get groups
+    $MgGraphProps = @{
+        CertificateThumbprint = '3BC79C67F5D68ABBDAE90760C57D4E8CD3B2EA12'
+        ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
+        TenantId = 'ba07baab-431b-49ed-add7-cbc3542f5140'
+    }
+    Connect-MgGraph @MgGraphProps
+    $group = Get-MgGroup -Filter "DisplayName eq 'Veeam.TeamVeeamCom'"
 
     function AddSPOSiteGroupMember {
         param (
             [string]$Identity,
             [string]$Group
         )
-        $LoginName = Get-AzureADUser -SearchString $Identity
+        
+        switch -Regex ($Identity) {
+            '\w+@w+$' {  $IdProperty ='mail' }
+            "\s" {  $IdProperty ='DisplayName' }
+            "w+\.w+$" {  $IdProperty ='mail' }
+        }
+
+        $LoginName = Get-MgUser -Filter "$IdProperty eq '$Identity'"
         if ( $null -ne $LoginName ) {
             $LoginName = $LoginName.UserPrincipalName
         } else {
-            $LoginName = Get-AzureADGroup -SearchString $Identity
-            $LoginName = "c:0t.c|tenant|$($LoginName.ObjectId)"
+            $LoginName = Get-MgGroup -Filter "$IdProperty eq '$Identity'"
+            $LoginName = "c:0t.c|tenant|$($LoginName.Id)"
         }
         $Group = "$SiteTitle $Group"
         Add-PnPUserToGroup -LoginName $LoginName -Identity $Group | Out-Null
+        #Write-Output $LoginName
     }
+
+
+
+
+
 
     for ($u = 0 ; $u -lt $Owners.Count ; $u++ ) {
         AddSPOSiteGroupMember -Identity $Owners[$u] -Group "Owners"
@@ -364,39 +400,6 @@ function New-SPOnlineSite {
     }
 
     
-    #Microsoft Graph Way to get groups
-    # $MgGraphProps = @{
-    #     CertificateThumbprint = '3BC79C67F5D68ABBDAE90760C57D4E8CD3B2EA12'
-    #     ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
-    #     TenantId = 'ba07baab-431b-49ed-add7-cbc3542f5140'
-    # }
-    # Connect-MgGraph @MgGraphProps
-    # $group = Get-MgGroup -Filter "StartsWith(DisplayName,'Veeam.TeamVeeamCom')"
-
-    # function AddSPOSiteGroupMember {
-    #     param (
-    #         [string]$Identity,
-    #         [string]$Group
-    #     )
-        
-    #     switch -Regex ($Identity) {
-    #         '\w+@w+$' {  $IdProperty ='mail' }
-    #         "\s" {  $IdProperty ='DisplayName' }
-    #         "w+\.w+$" {  $IdProperty ='mail' }
-    #     }
-
-    #     $LoginName = Get-MgUser -Filter "$IdProperty eq '$Identity'"
-    #     if ( $null -ne $LoginName ) {
-    #         $LoginName = $LoginName.UserPrincipalName
-    #     } else {
-    #         $LoginName = Get-MgGroup -Filter "$IdProperty eq '$Identity'"
-    #         $LoginName = "c:0t.c|tenant|$($LoginName.Id)"
-    #     }
-    #     $Group = "$SiteTitle $Group"
-    #     #Add-PnPUserToGroup -LoginName $LoginName -Identity $Group | Out-Null
-    #     Write-Output $LoginName
-    # }
-
 
 
     Disconnect-PnPOnline
