@@ -18,7 +18,6 @@ Add-PSSnapin Microsoft.SharePoint.PowerShell
 $ErrorActionPreference = 'Stop'
 $GetADUserParameters = @{
     #Filter = { ThumbnailPhoto -notlike "." }
-    Filter = { SamAccountName -eq 'yuriy.samorodov' }
     SearchBase = 'OU=Accounts,dc=amust,dc=local'
     SearchScope = 'Subtree'
     Properties = 'thumbnailPhoto'

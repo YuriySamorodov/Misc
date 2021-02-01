@@ -74,8 +74,6 @@ Write-Debug $QueryResults.Render
 
 
 $MailMessageParameters = @{
-    From = 'yuriy.samorodov@veeam.com'
-    To = 'yuriy.samorodov@veeam.com'
     SmtpServer = 'outlook.office365.com'
     Port = '587'
     UseSSL = $true

@@ -1,15 +1,4 @@
 
-    #[cmdletbinding()]
-    #Variable
-    <#
-    $UserName = "yuriy.samorodov@veeam.com"
-    $Password = 'K0nstantin1995!';
-    $Tenant = "veeamsoftwarecorp.onmicrosoft.com"
-    $global:uri = 'https://outlook.office365.com/EWS/Exchange.asmx'
-    #GUID of the 'Personal never move to archive' retention tag
-    $ArchiveTagGUID = '142d0b7c-2c73-43d2-a97d-04a495c24ccb'
-    #>
-
     Param (
         [Parameter(Mandatory=$false,Position=0)]
         [string]$global:UserName = 'svc-backup-ExchO@veeam.com',
@@ -19,7 +8,7 @@
         [ValidateSet('Calendar','Contacts','Notes','Tasks','All')]
         [string[]]$global:Folders = 'Calendar',
         [Parameter(Mandatory=$false,Position=3)]
-        [string[]]$global:Mailboxes = 'yuriy.samorodov@veeam.com',
+        [string[]]$global:Mailboxes = 'user',
         [Parameter(Mandatory=$false,Position=4)]
         [system.uri]$global:Tenant = 'veeamsoftwarecorp.onmicrosoft.com',
         [Parameter(Mandatory=$false,Position=100)]
