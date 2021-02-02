@@ -30,6 +30,11 @@ function New-SPOnlineSite {
     $SiteCollectionAdmins = @("c:0t.c|tenant|1aa07d2c-c093-49b3-b9d7-d4194c915317
     $SiteOwner") -split "`n"
     $SiteCollectionAdmins = $SiteCollectionAdmins.Trim()
+    $Owners = @()
+    $Designers = @()
+    $Members = @()
+    $Contributors = @()
+    $Visitors = @()
 
 
 
@@ -182,12 +187,12 @@ function New-SPOnlineSite {
             OnQuickLaunch = $false
         }
 
-       New-PnPList @NewPnPList | Out-Null
+        New-PnPList @NewPnPList | Out-Null
         Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) Created a list"
         #$PnPList = Get-PnPList $NewPnPList.Title
 
 
-       function AddListColumns {
+        function AddListColumns {
             param (
                 [string]$List = $ListName,
                 [string]$FieldType,
@@ -216,14 +221,14 @@ function New-SPOnlineSite {
                     'Announcement' { 'Note' }
                     'Urgent' {'Boolean' }
             }
-           AddListColumns -FieldName $FieldName -FieldType $fieldType -List $NewPnPList.Title | Out-Null
+            AddListColumns -FieldName $FieldName -FieldType $fieldType -List $NewPnPList.Title | Out-Null
         }
 
         Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) created Fields"
-         
-         #Add Annoucement wording
-         $ShortMessage = "Please be advised information stored on this SharePoint site can be <strong>shared with people outside Veeam</strong> whose personal accounts are not controlled by Veeam IT."
-         $LongMessage = "Before you upload files containing sensitive business information on this site, keep in mind the following risks of data leak:
+        
+        #Add Annoucement wording
+        $ShortMessage = "Please be advised information stored on this SharePoint site can be <strong>shared with people outside Veeam</strong> whose personal accounts are not controlled by Veeam IT."
+        $LongMessage = "Before you upload files containing sensitive business information on this site, keep in mind the following risks of data leak:
                         <ol>
                         <li>The <strong>information can be exposed</strong> to the public Internet unintentionally.</li>
                         <li>Once the information becomes available to people outside Veeam, an <strong>opportunity for data compromise</strong> is provided. Therefore, the information may also become available to unwanted people.</li>
@@ -256,15 +261,15 @@ function New-SPOnlineSite {
         Write-Information "$(get-date -Format "yyy-MM-dd HH:mm:ss" ) $($PnPTenantSite.Url) set $ListName content visible for internal users only"
 
 
+        Disconnect-PnPOnline
+
     }
 
-    Disconnect-PnPOnline
     
     Start-Sleep -Seconds 30
 
     #SharePoint Groups
-    $Groups = @("Designers
-    Contributors" ) -split "`n"
+    $Groups = @("Designers", "Contributors" )
     $Groups = $Groups.Trim()
 
 
@@ -341,24 +346,18 @@ function New-SPOnlineSite {
     # }
 
     #Microsoft Graph Way to get groups
-    $MgGraphProps = @{
-        CertificateThumbprint = '3BC79C67F5D68ABBDAE90760C57D4E8CD3B2EA12'
-        ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
-        TenantId = 'ba07baab-431b-49ed-add7-cbc3542f5140'
-    }
-    Connect-MgGraph @MgGraphProps
-    $group = Get-MgGroup -Filter "DisplayName eq 'Veeam.TeamVeeamCom'"
-
     function AddSPOSiteGroupMember {
         param (
             [string]$Identity,
             [string]$Group
         )
         
+
+        
         switch -Regex ($Identity) {
-            '\w+@w+$' {  $IdProperty ='mail' }
+            '(?:[a-z0-9!#$%&*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])' {  $IdProperty ='mail' }
             "\s" {  $IdProperty ='DisplayName' }
-            "w+\.w+$" {  $IdProperty ='mail' }
+            "w+\.w+$" {  $IdProperty ='MailNickName' }
         }
 
         $LoginName = Get-MgUser -Filter "$IdProperty eq '$Identity'"
@@ -369,12 +368,21 @@ function New-SPOnlineSite {
             $LoginName = "c:0t.c|tenant|$($LoginName.Id)"
         }
         $Group = "$SiteTitle $Group"
-        Add-PnPUserToGroup -LoginName $LoginName -Identity $Group | Out-Null
+        Add-PnPGroupMember -LoginName $LoginName -Identity $Group | Out-Null
         #Write-Output $LoginName
     }
 
-
-
+    $MgGraphProps = @{
+        CertificateThumbprint = '3BC79C67F5D68ABBDAE90760C57D4E8CD3B2EA12'
+        ClientId = '15460790-5201-4749-ac72-7812b8d8bffd'
+        TenantId = 'ba07baab-431b-49ed-add7-cbc3542f5140'
+    }
+    
+    Connect-MgGraph @MgGraphProps
+    
+    $Group = Get-MgGroup -Filter "DisplayName eq 'Veeam.TeamVeeamCom'"
+    
+    $Designers += $Group.Mail
 
 
 
@@ -383,7 +391,7 @@ function New-SPOnlineSite {
     }
 
     for ($u = 0 ; $u -lt $Designers.Count ; $u++ ) {
-        . AddSPOSiteGroupMember -Identity $Designers[$u] -Group "Designers"
+        AddSPOSiteGroupMember -Identity $Designers[$u] -Group "Designers"
         Write-Host "$($Designers[$u])"
     }
 
