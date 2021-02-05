@@ -30,11 +30,11 @@ function New-SPOnlineSite {
     $SiteCollectionAdmins = @("c:0t.c|tenant|1aa07d2c-c093-49b3-b9d7-d4194c915317
     $SiteOwner") -split "`n"
     $SiteCollectionAdmins = $SiteCollectionAdmins.Trim()
-    $Owners = @()
-    $Designers = @()
-    $Members = @()
-    $Contributors = @()
-    $Visitors = @()
+    # $Owners = @()
+    # $Designers = @()
+    # $Members = @()
+    # $Contributors = @()
+    # $Visitors = @()
 
 
 
